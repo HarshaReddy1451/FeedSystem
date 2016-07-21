@@ -14,6 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.xml.bind.DatatypeConverter;
 
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
@@ -33,9 +34,13 @@ public class FeedSystemController {
 		PrintWriter out= response.getWriter();
 		//String pattern= "^[a-zA-Z0-9]*$";
 		
+		System.out.println(userName);
+		System.out.println(password);
+		
 		Login login = new Login();
 		List<String> userData =data(userName);
-		System.out.println(userData);
+		System.out.println("userdata:" + userData);
+		
 		if(userData.contains(userName) && userData.contains(password))
 		{
 			login.setUserName(userName);
@@ -44,9 +49,10 @@ public class FeedSystemController {
 		}
 		else
 		{
-			out.println("<script>alert('UserName or password entered is incorrect')</script>");
+			ModelMap map = new ModelMap();
+			map.addAttribute("boolValue",false);
+			return new ModelAndView("index");
 		}
-		return new ModelAndView("index");
 	}
 	@RequestMapping(value="/updateservlet",method=RequestMethod.POST)
 	public ModelAndView update(HttpServletRequest request, HttpServletResponse response) throws IOException
@@ -61,6 +67,7 @@ public class FeedSystemController {
 		Date date = new Date(millis);
 		/*DateFormat format = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
 		format.setTimeZone(TimeZone.getTimeZone("GMT"));*/
+		
 		
 		String feedObj= new Gson().toJson(feedText);
 		String userNameObj=new Gson().toJson(completeUserName);
@@ -92,13 +99,16 @@ public class FeedSystemController {
 		
 		UserDetails userDetails = new UserDetails();
 		
-		if(!signUpUserName.equals("") && !signUpPassword.equals("") && signUpConfirmPassword.equals(signUpPassword) && index>1 && dot> index+2 && dot+2 < signUpEmail.length())
+		if(!signUpUserName.equals("") && !signUpPassword.equals("") && (signUpPassword.length()>=6) && signUpConfirmPassword.equals(signUpPassword) && index>1 && dot> index+2 && dot+2 < signUpEmail.length())
 		{
 			userDetails.setSignUpUserName(signUpUserName);
 			userDetails.setSignUpPassword(encoded);
 			//userDetails.setSignUpConfirmPassword(signUpConfirmPassword);
 			userDetails.setSignUpEmail(signUpEmail);
-			userDetails.setDate(new Date());
+			userDetails.setIsDelete(false);
+			userDetails.setSource("default");
+			long millis;
+			userDetails.setDate(millis = System.currentTimeMillis());
 			
 			List<String> userData =data(userDetails.getSignUpEmail());
 			System.out.println(userData);
@@ -125,7 +135,7 @@ public class FeedSystemController {
 		}
 		return new ModelAndView("index");
 	}
-	@SuppressWarnings({ "unchecked" })
+	@SuppressWarnings({ "unchecked", "null" })
 	public List<String> data(String userName)
 	{
 		Query q = pm.newQuery(UserDetails.class);
@@ -151,6 +161,10 @@ public class FeedSystemController {
 					}
 				}
 			}	
+			else
+			{
+				
+			}
 		} finally {
 			q.closeAll();
 		}

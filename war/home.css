@@ -52,9 +52,11 @@ hr
 }
 #container
 {
-	border: 1px solid black;
+	border: 0px solid black;
 	margin: 0 auto; 
-	width:1000px;
+	float: right;
+	margin-right: 80px; 
+	width: 900px;
 	height: 350px;
 	background-color: white;
 	overflow: scroll;
@@ -99,9 +101,15 @@ h3
 	margin-right: 20px;
 	border-style: groove;
 }
-.homeContainer
+
+.loginContainer
 {
 	border-style: none;
+}
+#signUpBtn
+{
+	width: 80px;
+	height: 45px;
 }
 .modal-header
 {
@@ -143,4 +151,25 @@ p
 	border: 1px solid #5cb85c;
 	color: white;
 	font-weight: bold;
+}
+#displayUsers
+{
+	margin-left : 20px;
+	margin-top: 90px;
+	float : left;
+	width : 300px;
+	height : 355px;
+	border: 0px solid black;
+	background-color: white;
+	overflow: scroll;
+	overflow-x: hidden;
+}
+#signUpBtn
+{
+	height: 40px;
+	width : 80px;
+	background-color: #31b0d5;
+	color: white;
+	font-weight: bold;
+	border-radius: 4px;
 }

@@ -13,7 +13,6 @@
 				$("#button_update").click(function(){
 					var feed=$("#feedTextId").val();
 					var userName=$("#username").text();
-					
 					if(feed!="")
 					{
 						$.ajax({
@@ -50,14 +49,6 @@
 	<button onclick="location.href='index.html'" class="logout" width="48"
 		height="48">Logout</button>
 	<hr>
-	<%-- <%   
-    		String UserName=(String)session.getAttribute("UserName");
-			out.print("<div id='username'>");
-			out.print("<b>");
-			out.print("Welcome"+"<h4>"+${userName}+"<h4>");
-			out.print("</b>");
-			out.print("</div>");
-		%> --%>
 	<p id="username"><strong>Welcome: ${userName}</strong></p>
 	<input type="text" name="search" placeholder="Search..."
 		class="search_box" />
@@ -75,6 +66,10 @@
 				</button></td>
 		</tr>
 	</table>
+	<!-- <h3 id="allUsers">All Users</h3> -->
+	<div id="displayUsers">
+		<h4>Harsha</h4>
+	</div>
 	<h3>All Updates</h3>
 	<div id="container">
 	</div>

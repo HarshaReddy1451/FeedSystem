@@ -14,16 +14,14 @@
 	href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
 <script
 	src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
-<script
-	src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
-
+<script	src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
 </head>
 <body id="home_body" background="bgimg4.jpg">
-	<div class="homeContainer">
-		<h2>Click here to Share Your Feeds</h2>
+	<div class="loginContainer">
+		<h2><em>Click here to Share Your Feeds</em></h2>
 		<!-- Trigger the modal with a button -->
 		<button type="button" class="btn btn-info btn-lg" data-toggle="modal"
-			data-target="#myModal">Login</button>
+			data-target="#myModal" id="myBtn">Login</button>
 		<div class="modal fade" id="myModal" role="dialog">
 			<div class="modal-dialog">
 
@@ -55,18 +53,18 @@
 			</div>
 		</div>
 	</div>
-	<div class="homeContainer">
+	<div class="signUpContainer">
 		<!-- Trigger the modal with a button -->
-		<button type="button" class="btn btn-info btn-sg" data-toggle="modal"
-			data-target="#myModal1">SignUp</button>
+		<h4></h4>
+		<button type="button" id="signUpBtn" class="btn btn-info btn-sg" data-toggle="modal"
+			data-target="#myModal1"><strong>SignUp</strong></button>
 		<div class="modal fade" id="myModal1" role="dialog">
 			<div class="modal-dialog">
-
 				<!-- Modal content-->
 				<div class="modal-content">
 					<div class="modal-header">
 						<button type="button" class="close" data-dismiss="modal">&times;</button>
-						<h4 class="modal-title">Login</h4>
+						<h4 class="modal-title">SignUp</h4>
 					</div>
 					<div class="modal-body">
 						<form method="post" action="/signup" class="signup_form">

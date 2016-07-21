@@ -1,5 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=ISO-8859-1"
-    pageEncoding="ISO-8859-1"%>
+	pageEncoding="ISO-8859-1"%>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!-- The HTML 4.01 Transitional DOCTYPE declaration-->
 <!-- above set at the top of the file will set     -->
@@ -18,11 +18,29 @@
 	src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
 <script
 	src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
-
+<script type="text/javascript">
+	$(document).ready(function(){
+		var value = "${boolValue}";
+		console.log(value);
+		if (value=="") {
+			$("#errorModal").modal();
+			/* $("#errorLink").append("<p><strong>User doesn't exist. Click on SignUp to Register.</strong></p>"); */
+		}
+		$("#signUpBtn").click(function(){
+			$("#errorLink").text("");
+		});
+		$("#register").click(function(){
+			$("#errorModal").hide();
+			$("#myModal1").modal();
+		});
+	});
+</script>
 </head>
 <body id="home_body" background="bgimg4.jpg">
-	<div class="homeContainer">
-		<h2>Click here to Share Your Feeds</h2>
+	<div class="loginContainer">
+		<h2>
+			<em>Click here to Share Your Feeds</em>
+		</h2>
 		<!-- Trigger the modal with a button -->
 		<button type="button" class="btn btn-info btn-lg" data-toggle="modal"
 			data-target="#myModal">Login</button>
@@ -39,7 +57,7 @@
 						<form method="post" action="/login" class="login_form">
 							<table class="login_table">
 								<tr>
-									<td>USERNAME:</td>
+									<td>EMAIL:</td>
 									<td><input type="text" name="username" /></td>
 								</tr>
 								<tr>
@@ -57,10 +75,11 @@
 			</div>
 		</div>
 	</div>
-	<div class="homeContainer">
+	<div class="signUpContainer">
 		<!-- Trigger the modal with a button -->
-		<button type="button" class="btn btn-info btn-sg" data-toggle="modal"
-			data-target="#myModal1">SignUp</button>
+		<h4></h4>
+		<button type="button" id="signUpBtn" class="btn btn-info btn-sg"
+			data-toggle="modal" data-target="#myModal1">SignUp</button>
 		<div class="modal fade" id="myModal1" role="dialog">
 			<div class="modal-dialog">
 
@@ -68,7 +87,7 @@
 				<div class="modal-content">
 					<div class="modal-header">
 						<button type="button" class="close" data-dismiss="modal">&times;</button>
-						<h4 class="modal-title">Login</h4>
+						<h4 class="modal-title">SignUp</h4>
 					</div>
 					<div class="modal-body">
 						<form method="post" action="/signup" class="signup_form">
@@ -99,6 +118,29 @@
 				</div>
 			</div>
 		</div>
+	</div>
+	<div id="errorLink"></div>
+	<div class="errorContainer">
+		<div class="modal fade" id="errorModal" role="dialog">
+    <div class="modal-dialog">
+    
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Modal Header</h4>
+        </div>
+        <div class="modal-body">
+          <p>User doesn't exist. Click on SignUp to get Registered.</p>
+          <button id="register">SignUp</button>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+      
+    </div>
+  </div>
 	</div>
 </body>
 </html>
