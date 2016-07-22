@@ -7,7 +7,7 @@
 <title>Insert title here</title>
 </head>
 <body>
-	<h3>Successfully Registered as: ${name}</h3>
+	<h3>Successfully Registered.</h3>
 	<a href=index.html>Click here to login</a>
 </body>
 </html>

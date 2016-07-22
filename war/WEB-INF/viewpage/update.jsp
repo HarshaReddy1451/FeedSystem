@@ -23,6 +23,7 @@
 							success: function(data) {
 								if(data!="")
 								{
+									console.log(data.length);
 									console.log(data);
 									var data1=data[0];
 									var data2=data[1];
@@ -46,10 +47,15 @@
 </head>
 <body background="bgimg4.jpg" id="update_body"
 	background="C:\Users\User\Desktop\HTML Programs\Proj\bgimg4.jpg">
-	<button onclick="location.href='index.html'" class="logout" width="48"
+	<button onclick="location.href='/logout'" class="logout" width="48"
 		height="48">Logout</button>
 	<hr>
-	<p id="username"><strong>Welcome: ${userName}</strong></p>
+	<%
+		String userName =(String) request.getAttribute("userName");
+		out.println("<p id='username'><strong>Welcome: ");
+		out.println(userName);
+		out.println("</strong></p>");
+	%>
 	<input type="text" name="search" placeholder="Search..."
 		class="search_box" />
 	<button class="search_button">

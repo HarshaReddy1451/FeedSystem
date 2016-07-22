@@ -11,24 +11,41 @@ import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import javax.xml.bind.DatatypeConverter;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.google.gson.Gson;
 
+
 @Controller
-public class FeedSystemController {
+public class FeedSystemController{
 
 	PersistenceManager pm = PMF.get().getPersistenceManager();
-	@RequestMapping(value="/login",method= RequestMethod.POST)
-	public ModelAndView login(HttpServletRequest request, HttpServletResponse response) throws IOException
+	
+	@RequestMapping(value="/update",method= RequestMethod.GET)
+	public ModelAndView updates(HttpServletRequest request, HttpServletResponse response) throws IOException
 	{
-		String userName=request.getParameter("username");
+		return new ModelAndView("update");
+	}
+
+	@RequestMapping(value="/signupData", method=RequestMethod.GET)
+	public ModelAndView signUpData()
+	{
+		return new ModelAndView("signup","name",new UserDetails().getSignUpUserName());
+		
+	}
+	
+	@RequestMapping(value="/login",method= RequestMethod.POST)
+	public void login(HttpServletRequest request, HttpServletResponse response) throws IOException
+	{
+		String userName=request.getParameter("email");
 		String password=request.getParameter("password");
 		
 		PrintWriter out= response.getWriter();
@@ -45,15 +62,17 @@ public class FeedSystemController {
 		{
 			login.setUserName(userName);
 			login.setPassword(password);
-			return new ModelAndView("update","userName",userData.get(0));
+			//session.setAttribute("userName", userData.get(0));
+			//return new ModelAndView("update","userName",userData.get(0));
+			response.getWriter().write(new Gson().toJson("false"));
 		}
 		else
 		{
-			ModelMap map = new ModelMap();
-			map.addAttribute("boolValue",false);
-			return new ModelAndView("index");
+			response.getWriter().write(new Gson().toJson(userName));
+			//return null;
 		}
 	}
+	@SuppressWarnings("unchecked")
 	@RequestMapping(value="/updateservlet",method=RequestMethod.POST)
 	public ModelAndView update(HttpServletRequest request, HttpServletResponse response) throws IOException
 	{
@@ -68,17 +87,63 @@ public class FeedSystemController {
 		/*DateFormat format = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
 		format.setTimeZone(TimeZone.getTimeZone("GMT"));*/
 		
+		UpdateFeed updateFeed = new UpdateFeed();
+		if(!feedText.equals(""))
+		{
+			updateFeed.setFeed(feedText);
+			updateFeed.setUserMail(completeUserName);
+			updateFeed.setDate(millis);
+			
+			System.out.println(updateFeed.getUserMail());
+			
+			pm.makePersistent(updateFeed);
+			
+			Query q = pm.newQuery(UpdateFeed.class);
+			q.setFilter("date == dateParam");
+			q.setOrdering("date desc");
+			q.declareParameters("String dateParam");
+			
+			List<UpdateFeed> feeds =null;
+			List<String> feedData = new ArrayList<>();
+			
+			try {
+				feeds = (List<UpdateFeed>) q.execute(millis);
+				if (!feeds.isEmpty()) {
+					// good for listing
+					for(UpdateFeed data : feeds)
+					{
+						feedData.add(data.getFeed());
+						feedData.add(data.getUserMail());
+					}
+					System.out.println("Feeds: "+feedData);
+					String dateToDisplay=new Gson().toJson(date);
+					String feedToDisplay=new Gson().toJson(feedData.get(0));
+					String userNameToDisplay= new Gson().toJson(feedData.get(1));
+					String jsonObjects= "["+userNameToDisplay+","+feedToDisplay+","+dateToDisplay+"]";
+					response.getWriter().write(jsonObjects);
+				}	
+				else
+				{
+					
+				}
+			} finally {
+				q.closeAll();
+			}
+			
+		}
 		
-		String feedObj= new Gson().toJson(feedText);
+		
+		
+		/*String feedObj= new Gson().toJson(feedText);
 		String userNameObj=new Gson().toJson(completeUserName);
 		String dateToDisplay=new Gson().toJson(date);
 		String jsonObjects= "["+userNameObj+","+feedObj+","+dateToDisplay+"]";
-		response.getWriter().write(jsonObjects);
+		response.getWriter().write(jsonObjects);*/
 		return null;
 	}
 	@SuppressWarnings("unchecked")
 	@RequestMapping(value="/signup", method=RequestMethod.POST)
-	public ModelAndView signUp(HttpServletRequest request, HttpServletResponse response) throws IOException
+	public void signUp(HttpServletRequest request, HttpServletResponse response) throws IOException
 	{
 		String signUpUserName = request.getParameter("userName");
 		String signUpPassword = request.getParameter("password");
@@ -122,19 +187,32 @@ public class FeedSystemController {
 				{
 					//pm.close();
 				}
-				return new ModelAndView("signup","name",userDetails.getSignUpUserName());
+				//return new ModelAndView("signup","name",userDetails.getSignUpUserName());
+				response.getWriter().write(new Gson().toJson("false"));
 			}
 			else
 			{
-				out.println("<script>alert('User already exists with Info entered.')</script>");
+				response.getWriter().write(new Gson().toJson(signUpEmail));
+				//return new ModelAndV	iew("index");
 			}
 		}
 		else
 		{
-			out.println("<script>alert('Required fields are not appropriate.')</script>");
+			//out.println("<script>alert('Required fields are not appropriate.')</script>");
+			response.getWriter().write(new Gson().toJson(signUpEmail));
+			//return new ModelAndView("index");
 		}
+	}
+	
+	@RequestMapping(value="/logout")
+	public ModelAndView logout(HttpServletRequest request,HttpServletResponse response)
+	{
+		HttpSession session = request.getSession(false);
+		System.out.println(session.getId());
+		session.invalidate();
 		return new ModelAndView("index");
 	}
+	
 	@SuppressWarnings({ "unchecked", "null" })
 	public List<String> data(String userName)
 	{
