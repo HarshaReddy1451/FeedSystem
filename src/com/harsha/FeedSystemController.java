@@ -15,239 +15,183 @@ import javax.servlet.http.HttpSession;
 import javax.xml.bind.DatatypeConverter;
 
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.google.gson.Gson;
 
-
 @Controller
-public class FeedSystemController{
+public class FeedSystemController {
 
 	PersistenceManager pm = PMF.get().getPersistenceManager();
-	
-	@RequestMapping(value="/update",method= RequestMethod.GET)
-	public ModelAndView updates(HttpServletRequest request, HttpServletResponse response) throws IOException
-	{
+	List<String> userData;
+	UserDetails userDetails;
+
+	@RequestMapping(value = "/update", method = RequestMethod.GET)
+	public ModelAndView updates(HttpServletResponse response,HttpServletRequest request) throws IOException {
+		HttpSession session = request.getSession();
+		session.setAttribute("name",userData.get(0));
+		System.out.println(userData);
 		return new ModelAndView("update");
 	}
 
-	@RequestMapping(value="/signupData", method=RequestMethod.GET)
-	public ModelAndView signUpData()
-	{
-		return new ModelAndView("signup","name",new UserDetails().getSignUpUserName());
-		
+	@RequestMapping(value = "/signupData", method = RequestMethod.GET)
+	public ModelAndView signUpData() {
+		System.out.println(userDetails.getSignUpUserName());
+		return new ModelAndView("signup", "name", userDetails.getSignUpUserName());
+
 	}
-	
-	@RequestMapping(value="/login",method= RequestMethod.POST)
-	public void login(HttpServletRequest request, HttpServletResponse response) throws IOException
-	{
-		String userName=request.getParameter("email");
-		String password=request.getParameter("password");
-		
-		PrintWriter out= response.getWriter();
-		//String pattern= "^[a-zA-Z0-9]*$";
-		
+
+	@RequestMapping(value = "/login", method = RequestMethod.POST)
+	public void login(HttpServletRequest request, HttpServletResponse response) throws IOException {
+		String userName = request.getParameter("email");
+		String password = request.getParameter("password");
 		System.out.println(userName);
 		System.out.println(password);
-		
 		Login login = new Login();
-		List<String> userData =data(userName);
+		List<String> userData = data(userName);
 		System.out.println("userdata:" + userData);
-		
-		if(userData.contains(userName) && userData.contains(password))
-		{
+		if (userData.contains(userName) && userData.contains(password)) {
 			login.setUserName(userName);
 			login.setPassword(password);
-			//session.setAttribute("userName", userData.get(0));
-			//return new ModelAndView("update","userName",userData.get(0));
 			response.getWriter().write(new Gson().toJson("false"));
-		}
-		else
-		{
+		} else {
 			response.getWriter().write(new Gson().toJson(userName));
-			//return null;
 		}
 	}
+
 	@SuppressWarnings("unchecked")
-	@RequestMapping(value="/updateservlet",method=RequestMethod.POST)
-	public ModelAndView update(HttpServletRequest request, HttpServletResponse response) throws IOException
-	{
+	@RequestMapping(value = "/updateservlet", method = RequestMethod.POST)
+	public ModelAndView update(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		String feedText = request.getParameter("feed");
 		String userName = request.getParameter("userName");
-		String completeUserName=userName.substring(8);
-		
+		String completeUserName = userName.substring(11);
 		System.out.println(completeUserName);
-		
 		long millis = System.currentTimeMillis();
 		Date date = new Date(millis);
-		/*DateFormat format = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
-		format.setTimeZone(TimeZone.getTimeZone("GMT"));*/
-		
 		UpdateFeed updateFeed = new UpdateFeed();
-		if(!feedText.equals(""))
-		{
+		if (!feedText.equals("")) {
 			updateFeed.setFeed(feedText);
 			updateFeed.setUserMail(completeUserName);
 			updateFeed.setDate(millis);
-			
 			System.out.println(updateFeed.getUserMail());
-			
 			pm.makePersistent(updateFeed);
-			
 			Query q = pm.newQuery(UpdateFeed.class);
-			q.setFilter("date == dateParam");
+			/*q.setFilter("date == dateParam");
 			q.setOrdering("date desc");
-			q.declareParameters("String dateParam");
-			
-			List<UpdateFeed> feeds =null;
+			q.declareParameters("String dateParam");*/
+			List<UpdateFeed> feeds = null;
 			List<String> feedData = new ArrayList<>();
-			
 			try {
-				feeds = (List<UpdateFeed>) q.execute(millis);
+				feeds = (List<UpdateFeed>) q.execute();
+				System.out.println("Feeds"+feeds);
 				if (!feeds.isEmpty()) {
 					// good for listing
-					for(UpdateFeed data : feeds)
-					{
+					for (UpdateFeed data : feeds) {
 						feedData.add(data.getFeed());
 						feedData.add(data.getUserMail());
 					}
-					System.out.println("Feeds: "+feedData);
-					String dateToDisplay=new Gson().toJson(date);
-					String feedToDisplay=new Gson().toJson(feedData.get(0));
-					String userNameToDisplay= new Gson().toJson(feedData.get(1));
-					String jsonObjects= "["+userNameToDisplay+","+feedToDisplay+","+dateToDisplay+"]";
+					System.out.println("Feeds: " + feedData);
+					String dateToDisplay = new Gson().toJson(date);
+					String feedToDisplay = new Gson().toJson(feedData.get(0));
+					String userNameToDisplay = new Gson().toJson(feedData.get(1));
+					String jsonObjects = "["+userNameToDisplay+","+feedToDisplay+","+dateToDisplay+"]";
+					System.out.println(jsonObjects);
 					response.getWriter().write(jsonObjects);
-				}	
-				else
-				{
-					
+				} else {
+
 				}
 			} finally {
 				q.closeAll();
 			}
-			
 		}
-		
-		
-		
-		/*String feedObj= new Gson().toJson(feedText);
-		String userNameObj=new Gson().toJson(completeUserName);
-		String dateToDisplay=new Gson().toJson(date);
-		String jsonObjects= "["+userNameObj+","+feedObj+","+dateToDisplay+"]";
-		response.getWriter().write(jsonObjects);*/
 		return null;
 	}
+
 	@SuppressWarnings("unchecked")
-	@RequestMapping(value="/signup", method=RequestMethod.POST)
-	public void signUp(HttpServletRequest request, HttpServletResponse response) throws IOException
-	{
+	@RequestMapping(value = "/signup", method = RequestMethod.POST)
+	public void signUp(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		String signUpUserName = request.getParameter("userName");
 		String signUpPassword = request.getParameter("password");
 		String signUpConfirmPassword = request.getParameter("confirmPassword");
 		String signUpEmail = request.getParameter("email");
-		
-		
+
 		byte[] message = signUpPassword.getBytes("UTF-8");
 		String encoded = DatatypeConverter.printBase64Binary(message);
 		byte[] decoded = DatatypeConverter.parseBase64Binary(encoded);
 
 		System.out.println(encoded);
 		System.out.println(new String(decoded, "UTF-8"));
-		
-		PrintWriter out = response.getWriter();
-		int index=signUpEmail.indexOf("@");
-		int dot=signUpEmail.lastIndexOf(".");
-		
-		UserDetails userDetails = new UserDetails();
-		
-		if(!signUpUserName.equals("") && !signUpPassword.equals("") && (signUpPassword.length()>=6) && signUpConfirmPassword.equals(signUpPassword) && index>1 && dot> index+2 && dot+2 < signUpEmail.length())
-		{
+
+		int index = signUpEmail.indexOf("@");
+		int dot = signUpEmail.lastIndexOf(".");
+
+		userDetails = new UserDetails();
+		if (!signUpUserName.equals("") && !signUpPassword.equals("") && (signUpPassword.length() >= 6)
+				&& signUpConfirmPassword.equals(signUpPassword) && index > 1 && dot > index + 2
+				&& dot + 2 < signUpEmail.length()) {
 			userDetails.setSignUpUserName(signUpUserName);
 			userDetails.setSignUpPassword(encoded);
-			//userDetails.setSignUpConfirmPassword(signUpConfirmPassword);
 			userDetails.setSignUpEmail(signUpEmail);
 			userDetails.setIsDelete(false);
 			userDetails.setSource("default");
 			long millis;
 			userDetails.setDate(millis = System.currentTimeMillis());
-			
-			List<String> userData =data(userDetails.getSignUpEmail());
+			List<String> userData = data(userDetails.getSignUpEmail());
 			System.out.println(userData);
-			if(!userData.contains(signUpEmail))
-			{
-				try
-				{
+			if (!userData.contains(signUpEmail)) {
+				try {
 					pm.makePersistent(userDetails);
+				} finally {
+					// pm.close();
 				}
-				finally
-				{
-					//pm.close();
-				}
-				//return new ModelAndView("signup","name",userDetails.getSignUpUserName());
 				response.getWriter().write(new Gson().toJson("false"));
-			}
-			else
-			{
+			} else {
 				response.getWriter().write(new Gson().toJson(signUpEmail));
-				//return new ModelAndV	iew("index");
 			}
-		}
-		else
-		{
-			//out.println("<script>alert('Required fields are not appropriate.')</script>");
+		} else {
 			response.getWriter().write(new Gson().toJson(signUpEmail));
-			//return new ModelAndView("index");
 		}
 	}
-	
-	@RequestMapping(value="/logout")
-	public ModelAndView logout(HttpServletRequest request,HttpServletResponse response)
-	{
+
+	@RequestMapping(value = "/logout")
+	public ModelAndView logout(HttpServletRequest request, HttpServletResponse response) {
 		HttpSession session = request.getSession(false);
-		System.out.println(session.getId());
-		session.invalidate();
+    	System.out.println("User="+session.getAttribute("user"));
+    	if(session != null){
+    		session.invalidate();
+    	}
 		return new ModelAndView("index");
 	}
-	
+
 	@SuppressWarnings({ "unchecked", "null" })
-	public List<String> data(String userName)
-	{
+	public List<String> data(String userName) {
 		Query q = pm.newQuery(UserDetails.class);
 		q.setFilter("signUpEmail == signUpEmailParam");
 		q.setOrdering("date desc");
 		q.declareParameters("String signUpEmailParam");
 		List<UserDetails> results = null;
-		List<String> userData= new ArrayList<String>();
+		userData = new ArrayList<String>();
 		try {
 			results = (List<UserDetails>) q.execute(userName);
 			if (!results.isEmpty()) {
-				// good for listing
-				for(UserDetails data : results)
-				{
+				for (UserDetails data : results) {
 					userData.add(data.getSignUpUserName());
 					userData.add(data.getSignUpEmail());
-					byte[] decoded=DatatypeConverter.parseBase64Binary(data.getSignUpPassword());
+					byte[] decoded = DatatypeConverter.parseBase64Binary(data.getSignUpPassword());
 					try {
-						userData.add(new String(decoded,"UTF-8"));
+						userData.add(new String(decoded, "UTF-8"));
 					} catch (UnsupportedEncodingException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 				}
-			}	
-			else
-			{
-				
+			} else {
+
 			}
 		} finally {
 			q.closeAll();
 		}
 		return userData;
-
 	}
-	
 }

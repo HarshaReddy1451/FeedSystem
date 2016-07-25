@@ -16,7 +16,8 @@
 	href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
 <script
 	src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
-<script	src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+<script
+	src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
 
 <script type="text/javascript">
 			$(document).ready(function(){
@@ -34,7 +35,7 @@
 					console.log(password);
 					console.log(confirmPassword);
 					console.log(email);
-					if(userName!="" && password!="" && email!="" && indexAt>1 && dot> indexAt+2 && dot+2 < email.length)
+					if(userName!="" && password!="" && email!="")
 					{
 						$.ajax({
 							url : '/signup',
@@ -45,11 +46,15 @@
 								if(data!="")
 								{
 									console.log(" Name: "+data);
-									if(data==email)
+									if(data.trim() === email)
 									{
 										$("#myModal1").modal();
 										$("#userNameId").focus();
 										$("#signUpFooter").append("<p><strong>User Already Exists.</strong></p>");
+									}
+									else if(data.trim() === "false")
+									{
+										window.location.href = "/signupData";
 									}
 								}
 				            }
@@ -83,6 +88,7 @@
 							dataType: 'json',
 							data: {email,password},
 							success: function(data) {
+								console.log(data);
 								if(data!="")
 								{
 									console.log(" email: "+data);
@@ -94,6 +100,10 @@
 											$("#errorModal").hide();
 											$("#myModal1").modal();
 										});
+									}
+									else if(data.trim() === "false")
+									{
+										window.location.href = "/update";
 									}
 								}
 				            }
@@ -113,7 +123,9 @@
 </head>
 <body id="home_body" background="bgimg4.jpg">
 	<div class="loginContainer">
-		<h2><em>Click here to Share Your Feeds</em></h2>
+		<h2>
+			<em>Click here to Share Your Feeds</em>
+		</h2>
 		<!-- Trigger the modal with a button -->
 		<button type="button" class="btn btn-info btn-lg" data-toggle="modal"
 			data-target="#myModal" id="myBtn">Login</button>
@@ -128,24 +140,25 @@
 					</div>
 					<div class="modal-body">
 						<!-- <form method="post" action="/login" class="login_form"> -->
-							<table class="login_table">
-								<tr>
-									<td>EMAIL:</td>
-									<td><input type="email" name="username" id="loginEmailId" /></td>
-								</tr>
-								<tr>
-									<td>PASSWORD:</td>
-									<td><input type="password" name="password" id="loginPasswordId"/></td>
-								</tr>
-								<tr>
-									<td><input type="submit" value="Login" width="50" id="loginButton"
-										height="25" class="login" style="background-color: #5cb85c" /></td>
-								</tr>
-							</table>
+						<table class="login_table">
+							<tr>
+								<td>EMAIL:</td>
+								<td><input type="email" name="username" id="loginEmailId" /></td>
+							</tr>
+							<tr>
+								<td>PASSWORD:</td>
+								<td><input type="password" name="password"
+									id="loginPasswordId" /></td>
+							</tr>
+							<tr>
+								<td><input type="submit" value="Login" width="50"
+									id="loginButton" height="25" class="login"
+									style="background-color: #5cb85c" /></td>
+							</tr>
+						</table>
 						<!-- </form> -->
 					</div>
-					<div class="modal-footer" id="loginFooter">
-        			</div>
+					<div class="modal-footer" id="loginFooter"></div>
 				</div>
 			</div>
 		</div>
@@ -153,8 +166,10 @@
 	<div class="signUpContainer">
 		<!-- Trigger the modal with a button -->
 		<h4></h4>
-		<button type="button" id="signUpBtn" class="btn btn-info btn-sg" data-toggle="modal"
-			data-target="#myModal1"><strong>SignUp</strong></button>
+		<button type="button" id="signUpBtn" class="btn btn-info btn-sg"
+			data-toggle="modal" data-target="#myModal1">
+			<strong>SignUp</strong>
+		</button>
 		<div class="modal fade" id="myModal1" role="dialog">
 			<div class="modal-dialog">
 				<!-- Modal content-->
@@ -165,57 +180,58 @@
 					</div>
 					<div class="modal-body">
 						<!-- <form method="post" action="/signup" class="signup_form"> -->
-							<table class="signup_table">
-								<tr>
-									<td>UserName</td>
-									<td><input type="text" name="userName" id="userNameId"/></td>
-								</tr>
-								<tr>
-									<td>Password</td>
-									<td><input type="password" name="password" id="passwordId"/></td>
-								</tr>
-								<tr>
-									<td>Confirm Password</td>
-									<td><input type="password" name="confirmPassword" id="confirmPasswordId" /></td>
-								</tr>
-								<tr>
-									<td>Email</td>
-									<td><input type="email" name="email" id="emailId"/></td>
-								</tr>
-								<tr>
-									<td><input type="submit" value="SignUp" width="50" id="signUpButton"
-										height="25" class="signup" style="background-color: #5cb85c" /></td>
-								</tr>
-							</table>
+						<table class="signup_table">
+							<tr>
+								<td>UserName</td>
+								<td><input type="text" name="userName" id="userNameId" /></td>
+							</tr>
+							<tr>
+								<td>Password</td>
+								<td><input type="password" name="password" id="passwordId" /></td>
+							</tr>
+							<tr>
+								<td>Confirm Password</td>
+								<td><input type="password" name="confirmPassword"
+									id="confirmPasswordId" /></td>
+							</tr>
+							<tr>
+								<td>Email</td>
+								<td><input type="email" name="email" id="emailId" /></td>
+							</tr>
+							<tr>
+								<td><input type="submit" value="SignUp" width="50"
+									id="signUpButton" height="25" class="signup"
+									style="background-color: #5cb85c" /></td>
+							</tr>
+						</table>
 						<!-- </form> -->
 					</div>
-					<div class="modal-footer" id="signUpFooter">
-        			</div>
+					<div class="modal-footer" id="signUpFooter"></div>
 				</div>
 			</div>
 		</div>
 	</div>
 	<div class="errorContainer">
 		<div class="modal fade" id="errorModal" role="dialog">
-    <div class="modal-dialog">
-    
-      <!-- Modal content-->
-      <div class="modal-content">
-        <div class="modal-header">
-          <button type="button" class="close" data-dismiss="modal">&times;</button>
-          <h4 class="modal-title">Modal Header</h4>
-        </div>
-        <div class="modal-body">
-          <p>User doesn't exist. Click on SignUp to get Registered.</p>
-          <button id="register">SignUp</button>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-        </div>
-      </div>
-      
-    </div>
-  </div>
+			<div class="modal-dialog">
+
+				<!-- Modal content-->
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal">&times;</button>
+						<h4 class="modal-title">Modal Header</h4>
+					</div>
+					<div class="modal-body">
+						<p>User doesn't exist. Click on SignUp to get Registered.</p>
+						<button id="register">SignUp</button>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+					</div>
+				</div>
+
+			</div>
+		</div>
 	</div>
 </body>
 </html>
