@@ -29,6 +29,11 @@ public class FeedSystemController {
 	List<String> userData;
 	UserDetails userDetails;
 
+	@RequestMapping("/") 
+	public String home(){
+	    return "index"; 
+	} 
+	
 	@RequestMapping(value="/getUsers", method=RequestMethod.GET)
 	public void getUsers(HttpServletResponse response) throws IOException
 	{
@@ -106,12 +111,12 @@ public class FeedSystemController {
 						Object element=iterator.next();
 						System.out.println(element);
 					}*/
-					String dateToDisplay = new Gson().toJson(date);
+					/*String dateToDisplay = new Gson().toJson(date);
 					String feedToDisplay = new Gson().toJson(feedData.get(0));
 					String userNameToDisplay = new Gson().toJson(feedData.get(1));
 					String jsonObjects = "["+userNameToDisplay+","+feedToDisplay+","+dateToDisplay+"]";
-					System.out.println(jsonObjects);
-					response.getWriter().write(jsonObjects);
+					System.out.println(jsonObjects);*/
+					response.getWriter().write(new Gson().toJson(feedData));
 				} else {
 
 				}

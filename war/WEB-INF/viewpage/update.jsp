@@ -38,7 +38,7 @@
 								var data1=data[0];
 								var data2=data[1];
 								var data3=data[2];
-								$("#container").prepend("<div id='feeds'>"+ "<h4>"+ data1+ "</h4>"+ "<p>"+ data2+ " on "+ "<small>"+ data3 + "</small>"+ "</p>"+ "<div>");
+								$("#container").prepend("<div id='feeds'>"+ "<h4>"+ data2+ "</h4>"+ "<p>"+ data1+ "<div>");
 								$("#feedTextId").val("");
 							}
 						}
