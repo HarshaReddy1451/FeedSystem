@@ -10,6 +10,17 @@
 	src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
 <script type="text/javascript">
 	$(document).ready(function() {
+		$.ajax({
+			url :'/getUsers',
+			datatype:'json',
+			success: function(response){
+				if(response!=null)
+				{
+					console.log(response +"is the Response.");
+					$("#displayUsers").append("<div>"+response+"</div>");
+				}
+			}
+		});
 		$("#button_update").click(function() {
 			var feed = $("#feedTextId").val();
 			var userName = $("#username").text();
@@ -36,10 +47,22 @@
 				else 
 				{
 					alert("Feed should not empty.");
-				}	
+				}
 		});
 	});
 </script>
+<%
+	response.setHeader("Cache-Control", "no-cache"); //Forces caches to obtain a new copy of the page from the origin server 
+	response.setHeader("Cache-Control", "no-store"); //Directs caches not to store the page under any circumstance 
+	response.setDateHeader("Expires", 0); //Causes the proxy cache to see the page as "stale" 
+	response.setHeader("Pragma", "no-cache");
+%>
+<%
+	if(session.getAttribute("name")==null)
+	{
+		response.sendRedirect("index.html");
+	}
+%>
 </head>
 <body background="bgimg4.jpg" id="update_body"
 	background="C:\Users\User\Desktop\HTML Programs\Proj\bgimg4.jpg">
@@ -68,7 +91,6 @@
 	</table>
 	<!-- <h3 id="allUsers">All Users</h3> -->
 	<div id="displayUsers">
-		<h4>Harsha</h4>
 	</div>
 	<h3>All Updates</h3>
 	<div id="container"></div>

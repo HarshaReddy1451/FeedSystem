@@ -37,7 +37,7 @@
 						$.ajax({
 							url : '/signup',
 							type: 'post',
-							dataType: 'json',
+							 dataType: 'json',
 							data: {userName,password,confirmPassword,email},
 							success: function(data) {
 								if(data!="")
@@ -48,7 +48,7 @@
 										$("#myModal1").modal();
 										$("#userNameId").focus();
 										$("#signUpFooter").append("<p><strong>User Already Exists.</strong></p>");
-									}
+									}	
 									else if(data.trim() === "false")
 									{
 										window.location.href = "/signupData";
@@ -219,7 +219,6 @@
           <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
         </div>
       </div>
-      
     </div>
   </div>
 	</div>

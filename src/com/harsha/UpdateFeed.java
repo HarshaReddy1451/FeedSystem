@@ -16,6 +16,7 @@ public class UpdateFeed {
 	private long date;
 	
 	public String getUserMail() {
+		
 		return userMail;
 	}
 

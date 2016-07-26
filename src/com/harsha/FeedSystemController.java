@@ -5,6 +5,7 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.jdo.PersistenceManager;
@@ -28,6 +29,12 @@ public class FeedSystemController {
 	List<String> userData;
 	UserDetails userDetails;
 
+	@RequestMapping(value="/getUsers", method=RequestMethod.GET)
+	public void getUsers(HttpServletResponse response) throws IOException
+	{
+		System.out.println(userData.get(0));
+		response.getWriter().write(new Gson().toJson(userData.get(0)));
+	}
 	@RequestMapping(value = "/update", method = RequestMethod.GET)
 	public ModelAndView updates(HttpServletResponse response,HttpServletRequest request) throws IOException {
 		HttpSession session = request.getSession();
@@ -93,6 +100,12 @@ public class FeedSystemController {
 						feedData.add(data.getUserMail());
 					}
 					System.out.println("Feeds: " + feedData);
+					/*Iterator iterator = feedData.iterator();
+					while(iterator.hasNext())
+					{
+						Object element=iterator.next();
+						System.out.println(element);
+					}*/
 					String dateToDisplay = new Gson().toJson(date);
 					String feedToDisplay = new Gson().toJson(feedData.get(0));
 					String userNameToDisplay = new Gson().toJson(feedData.get(1));
@@ -157,8 +170,7 @@ public class FeedSystemController {
 
 	@RequestMapping(value = "/logout")
 	public ModelAndView logout(HttpServletRequest request, HttpServletResponse response) {
-		HttpSession session = request.getSession(false);
-    	System.out.println("User="+session.getAttribute("user"));
+		HttpSession session = request.getSession();
     	if(session != null){
     		session.invalidate();
     	}
