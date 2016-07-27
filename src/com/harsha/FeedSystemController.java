@@ -34,26 +34,6 @@ public class FeedSystemController {
 	    return "index"; 
 	} 
 	
-	@SuppressWarnings("unchecked")
-	@RequestMapping(value="/getUsers", method=RequestMethod.GET)
-	public void getUsers(HttpServletResponse response) throws IOException
-	{
-		Query q = pm.newQuery(UserDetails.class);
-		List<UserDetails> results = null;
-		userData = new ArrayList<String>();
-		try {
-			results = (List<UserDetails>) q.execute();
-			if (!results.isEmpty()) {
-				for (UserDetails data : results) {
-					userData.add(data.getSignUpEmail());
-				}
-			}
-		} finally {
-			q.closeAll();
-		}
-		System.out.println(userData);
-		response.getWriter().write(new Gson().toJson(userData));
-	}
 	@RequestMapping(value = "/update", method = RequestMethod.GET)
 	public ModelAndView updates(HttpServletResponse response,HttpServletRequest request) throws IOException {
 		HttpSession session = request.getSession();
@@ -62,7 +42,27 @@ public class FeedSystemController {
 		System.out.println(userData);
 		return new ModelAndView("update");
 	}
-
+	
+	@SuppressWarnings("unchecked")
+	@RequestMapping(value="/getUsers", method=RequestMethod.GET)
+	public void getUsers(HttpServletResponse response) throws IOException
+	{
+		Query q = pm.newQuery(UserDetails.class);
+		List<UserDetails> results = null;
+		List userData1 = new ArrayList<String>();
+		try {
+			results = (List<UserDetails>) q.execute();
+			if (!results.isEmpty()) {
+				for (UserDetails data : results) {
+					userData1.add(data.getSignUpEmail());
+				}
+			}
+		} finally {
+			q.closeAll();
+		}
+		System.out.println(userData1);
+		response.getWriter().write(new Gson().toJson(userData1));
+	}
 	@RequestMapping(value = "/signupData", method = RequestMethod.GET)
 	public ModelAndView signUpData() {
 		System.out.println(userDetails.getSignUpUserName());

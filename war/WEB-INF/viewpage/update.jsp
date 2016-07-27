@@ -10,6 +10,8 @@
 	src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
 <script type="text/javascript">
 	$(document).ready(function() {
+		
+		/* for displaying all users */
 		$.ajax({
 			url :'/getUsers',
 			datatype:'json',
@@ -28,6 +30,7 @@
 				}
 			}
 		});
+		/* for fetching all updates */
 		$.ajax({
 			url:'/fetchUpdates',
 			datatype:'json',
@@ -47,6 +50,7 @@
 				}
 			}
 		});
+		/* for storing updated feed */
 		$("#button_update").click(function() {
 			var feed = $("#feedTextId").val();
 			var userName = $("#username").text();
