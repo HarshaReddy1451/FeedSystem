@@ -67,6 +67,8 @@ public class FeedSystemController {
 		if (userData.contains(userName) && userData.contains(password)) {
 			login.setUserName(userName);
 			login.setPassword(password);
+			HttpSession session = request.getSession();
+			session.setAttribute("name", userData.get(0));
 			response.getWriter().write(new Gson().toJson("false"));
 		} else {
 			response.getWriter().write(new Gson().toJson(userName));
@@ -175,7 +177,8 @@ public class FeedSystemController {
 
 	@RequestMapping(value = "/logout")
 	public ModelAndView logout(HttpServletRequest request, HttpServletResponse response) {
-		HttpSession session = request.getSession();
+		HttpSession session = request.getSession(false);
+		session.removeAttribute("name");
     	if(session != null){
     		session.invalidate();
     	}

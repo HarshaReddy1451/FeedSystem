@@ -51,18 +51,18 @@
 		});
 	});
 </script>
-<%
-	response.setHeader("Cache-Control", "no-cache"); //Forces caches to obtain a new copy of the page from the origin server 
-	response.setHeader("Cache-Control", "no-store"); //Directs caches not to store the page under any circumstance 
-	response.setDateHeader("Expires", 0); //Causes the proxy cache to see the page as "stale" 
-	response.setHeader("Pragma", "no-cache");
-%>
-<%
-	if(session.getAttribute("name")==null)
-	{
-		response.sendRedirect("index.html");
-	}
-%>
+	<%
+		response.setHeader("Cache-Control", "no-cache"); //Forces caches to obtain a new copy of the page from the origin server 
+		response.setHeader("Cache-Control", "no-store"); //Directs caches not to store the page under any circumstance 
+		response.setDateHeader("Expires", 0); //Causes the proxy cache to see the page as "stale" 
+		response.setHeader("Pragma", "no-cache");
+	%>
+	<%
+		if(session.getAttribute("name")==null)
+		{
+			response.sendRedirect("/");
+		}
+	%>
 </head>
 <body background="bgimg4.jpg" id="update_body"
 	background="C:\Users\User\Desktop\HTML Programs\Proj\bgimg4.jpg">
