@@ -26,7 +26,7 @@ import com.google.gson.Gson;
 public class FeedSystemController {
 
 	PersistenceManager pm = PMF.get().getPersistenceManager();
-	List<String> userData;
+	List<String> userData,feedData;
 	UserDetails userDetails;
 
 	@RequestMapping("/") 
@@ -34,15 +34,30 @@ public class FeedSystemController {
 	    return "index"; 
 	} 
 	
+	@SuppressWarnings("unchecked")
 	@RequestMapping(value="/getUsers", method=RequestMethod.GET)
 	public void getUsers(HttpServletResponse response) throws IOException
 	{
-		System.out.println(userData.get(0));
-		response.getWriter().write(new Gson().toJson(userData.get(0)));
+		Query q = pm.newQuery(UserDetails.class);
+		List<UserDetails> results = null;
+		userData = new ArrayList<String>();
+		try {
+			results = (List<UserDetails>) q.execute();
+			if (!results.isEmpty()) {
+				for (UserDetails data : results) {
+					userData.add(data.getSignUpEmail());
+				}
+			}
+		} finally {
+			q.closeAll();
+		}
+		System.out.println(userData);
+		response.getWriter().write(new Gson().toJson(userData));
 	}
 	@RequestMapping(value = "/update", method = RequestMethod.GET)
 	public ModelAndView updates(HttpServletResponse response,HttpServletRequest request) throws IOException {
 		HttpSession session = request.getSession();
+		System.out.println("Username to display:"+userData.get(0));
 		session.setAttribute("name",userData.get(0));
 		System.out.println(userData);
 		return new ModelAndView("update");
@@ -91,40 +106,10 @@ public class FeedSystemController {
 			updateFeed.setDate(millis);
 			System.out.println(updateFeed.getUserMail());
 			pm.makePersistent(updateFeed);
-			Query q = pm.newQuery(UpdateFeed.class);
-			/*q.setFilter("date == dateParam");
-			q.setOrdering("date desc");
-			q.declareParameters("String dateParam");*/
-			List<UpdateFeed> feeds = null;
-			List<String> feedData = new ArrayList<>();
-			try {
-				feeds = (List<UpdateFeed>) q.execute();
-				System.out.println("Feeds"+feeds);
-				if (!feeds.isEmpty()) {
-					// good for listing
-					for (UpdateFeed data : feeds) {
-						feedData.add(data.getFeed());
-						feedData.add(data.getUserMail());
-					}
-					System.out.println("Feeds: " + feedData);
-					/*Iterator iterator = feedData.iterator();
-					while(iterator.hasNext())
-					{
-						Object element=iterator.next();
-						System.out.println(element);
-					}*/
-					/*String dateToDisplay = new Gson().toJson(date);
-					String feedToDisplay = new Gson().toJson(feedData.get(0));
-					String userNameToDisplay = new Gson().toJson(feedData.get(1));
-					String jsonObjects = "["+userNameToDisplay+","+feedToDisplay+","+dateToDisplay+"]";
-					System.out.println(jsonObjects);*/
-					response.getWriter().write(new Gson().toJson(feedData));
-				} else {
-
-				}
-			} finally {
-				q.closeAll();
-			}
+			String userNameToDisplay=new Gson().toJson(feedData.get(1));
+			String feedToDisplay=new Gson().toJson(feedData.get(0));
+			String jsonObjects= "["+userNameToDisplay+","+feedToDisplay+"]";
+			response.getWriter().write(jsonObjects);
 		}
 		return null;
 	}
@@ -176,13 +161,9 @@ public class FeedSystemController {
 	}
 
 	@RequestMapping(value = "/logout")
-	public ModelAndView logout(HttpServletRequest request, HttpServletResponse response) {
-		HttpSession session = request.getSession(false);
-		session.removeAttribute("name");
-    	if(session != null){
-    		session.invalidate();
-    	}
-		return new ModelAndView("index");
+	public String logout(HttpSession session) {
+    	session.invalidate();
+		return "redirect:/";
 	}
 
 	@SuppressWarnings({ "unchecked", "null" })
@@ -213,5 +194,32 @@ public class FeedSystemController {
 			q.closeAll();
 		}
 		return userData;
+	}
+	@SuppressWarnings("unchecked")
+	@RequestMapping(value="/fetchUpdates")
+	public void fetchUpdates(HttpServletResponse response) throws IOException
+	{
+		Query q = pm.newQuery(UpdateFeed.class);
+		q.setOrdering("date desc");
+		List<UpdateFeed> feeds = null;
+		feedData = new ArrayList<>();
+		try {
+			feeds = (List<UpdateFeed>) q.execute();
+			System.out.println("Feeds"+feeds);
+			if (!feeds.isEmpty()) {
+				// good for listing
+				for (UpdateFeed data : feeds) {
+					feedData.add(data.getFeed());
+					feedData.add(data.getUserMail());
+				}
+				System.out.println("Feeds: " + feedData);
+				response.getWriter().write(new Gson().toJson(feedData));
+			} else {
+
+			}
+		} finally {
+			q.closeAll();
+		}
+
 	}
 }

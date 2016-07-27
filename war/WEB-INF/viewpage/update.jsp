@@ -16,8 +16,34 @@
 			success: function(response){
 				if(response!=null)
 				{
+					var splitingNames=response.split(",");
+					console.log(splitingNames);
 					console.log(response +"is the Response.");
-					$("#displayUsers").append("<div>"+response+"</div>");
+					var parsedResponse=JSON.parse(splitingNames);
+					console.log(parsedResponse);
+					for(i=0;i<parsedResponse.length;i++)
+					{
+						$("#displayUsers").prepend("<div id='users'>"+parsedResponse[i]+"</div>");
+					}
+				}
+			}
+		});
+		$.ajax({
+			url:'/fetchUpdates',
+			datatype:'json',
+			success: function(feeds){
+				console.log(feeds);
+				var splitingTheResponse=feeds.split(",");
+				console.log(splitingTheResponse);
+				var parsingResponse=JSON.parse(splitingTheResponse);
+				console.log(parsingResponse);
+				for (i = 0; i < parsingResponse.length; i++) 
+				{
+					/* var istDate = (new Date(parsingResponse[i].date)).toUTCString();	
+				    var date = new Date(istDate);
+					var newIstDate = date.toString();
+					newIstDate=newIstDate.split(' ').slice(0, 5).join(' '); */
+					$("#container").prepend("<div id='feeds'>"+ "<h4>"+ parsingResponse[i]+ "</h4>"+ "<p>"+ parsingResponse[i+1]+ "<div>");
 				}
 			}
 		});
@@ -60,7 +86,7 @@
 	<%
 		if(session.getAttribute("name")==null)
 		{
-			response.sendRedirect("/");
+			response.sendRedirect("/logout");
 		}
 	%>
 </head>

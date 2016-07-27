@@ -8,6 +8,6 @@
 </head>
 <body>
 	<h3>Successfully Registered as: ${name}</h3>
-	<a href=index.html>Click here to login</a>
+	<a href="/">Click here to login</a>
 </body>
 </html>
