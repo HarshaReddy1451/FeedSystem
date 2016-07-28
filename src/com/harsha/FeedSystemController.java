@@ -26,27 +26,26 @@ import com.google.gson.Gson;
 public class FeedSystemController {
 
 	PersistenceManager pm = PMF.get().getPersistenceManager();
-	List<String> userData,feedData;
+	List<String> userData, feedData;
 	UserDetails userDetails;
 
-	@RequestMapping("/") 
-	public String home(){
-	    return "index"; 
-	} 
-	
+	@RequestMapping("/")
+	public String home() {
+		return "index";
+	}
+
 	@RequestMapping(value = "/update", method = RequestMethod.GET)
-	public ModelAndView updates(HttpServletResponse response,HttpServletRequest request) throws IOException {
+	public ModelAndView updates(HttpServletResponse response, HttpServletRequest request) throws IOException {
 		HttpSession session = request.getSession();
-		System.out.println("Username to display:"+userData.get(0));
-		session.setAttribute("name",userData.get(0));
+		System.out.println("Username to display:" + userData.get(0));
+		session.setAttribute("name", userData.get(0));
 		System.out.println(userData);
 		return new ModelAndView("update");
 	}
-	
+
 	@SuppressWarnings("unchecked")
-	@RequestMapping(value="/getUsers", method=RequestMethod.GET)
-	public void getUsers(HttpServletResponse response) throws IOException
-	{
+	@RequestMapping(value = "/getUsers", method = RequestMethod.GET)
+	public void getUsers(HttpServletResponse response) throws IOException {
 		Query q = pm.newQuery(UserDetails.class);
 		q.setOrdering("signUpEmail desc");
 		List<UserDetails> results = null;
@@ -64,11 +63,11 @@ public class FeedSystemController {
 		System.out.println(userData1);
 		response.getWriter().write(new Gson().toJson(userData1));
 	}
+
 	@RequestMapping(value = "/signupData", method = RequestMethod.GET)
 	public ModelAndView signUpData() {
 		System.out.println(userDetails.getSignUpUserName());
 		return new ModelAndView("signup", "name", userDetails.getSignUpUserName());
-
 	}
 
 	@RequestMapping(value = "/login", method = RequestMethod.POST)
@@ -97,7 +96,7 @@ public class FeedSystemController {
 		String feedText = request.getParameter("feed");
 		String userName = request.getParameter("userName");
 		String completeUserName = userName.substring(11);
-		System.out.println(completeUserName);
+		System.out.println("Complete UserName:"+completeUserName);
 		long millis = System.currentTimeMillis();
 		Date date = new Date(millis);
 		UpdateFeed updateFeed = new UpdateFeed();
@@ -107,9 +106,31 @@ public class FeedSystemController {
 			updateFeed.setDate(millis);
 			System.out.println(updateFeed.getUserMail());
 			pm.makePersistent(updateFeed);
-			String userNameToDisplay=new Gson().toJson(feedData.get(1));
-			String feedToDisplay=new Gson().toJson(feedData.get(0));
-			String jsonObjects= "["+userNameToDisplay+","+feedToDisplay+"]";
+			Query q = pm.newQuery(UpdateFeed.class);
+			q.setOrdering("date desc");
+			List<UpdateFeed> feeds = null;
+			List<String> feedData1 = new ArrayList<>();
+			try {
+				feeds = (List<UpdateFeed>) q.execute();
+				System.out.println("Feeds" + feeds);
+				if (!feeds.isEmpty()) {
+					// good for listing
+					for (UpdateFeed data : feeds) {
+						feedData1.add(data.getFeed());
+						feedData1.add(data.getUserMail());
+						feedData1.add(Long.toString(data.getDate()));
+					}
+					System.out.println("Feeds: " + feedData1);
+				}
+			} finally {
+				q.closeAll();
+			}
+			String userNameToDisplay = new Gson().toJson(feedData1.get(1));
+			System.out.println("UserNameTDisplay:"+userNameToDisplay);
+			String feedToDisplay = new Gson().toJson(feedData1.get(0));
+			System.out.println("Feed To display:"+feedToDisplay);
+			String dateToDisplay= new Gson().toJson(feedData1.get(2));
+			String jsonObjects = "[" + userNameToDisplay + "," + feedToDisplay + "," + dateToDisplay + "]";
 			response.getWriter().write(jsonObjects);
 		}
 		return null;
@@ -163,7 +184,7 @@ public class FeedSystemController {
 
 	@RequestMapping(value = "/logout")
 	public String logout(HttpSession session) {
-    	session.invalidate();
+		session.invalidate();
 		return "redirect:/";
 	}
 
@@ -188,25 +209,23 @@ public class FeedSystemController {
 						e.printStackTrace();
 					}
 				}
-			} else {
-
 			}
 		} finally {
 			q.closeAll();
 		}
 		return userData;
 	}
+
 	@SuppressWarnings("unchecked")
-	@RequestMapping(value="/fetchUpdates")
-	public void fetchUpdates(HttpServletResponse response) throws IOException
-	{
+	@RequestMapping(value = "/fetchUpdates")
+	public void fetchUpdates(HttpServletResponse response) throws IOException {
 		Query q = pm.newQuery(UpdateFeed.class);
 		q.setOrdering("date desc");
 		List<UpdateFeed> feeds = null;
 		feedData = new ArrayList<>();
 		try {
 			feeds = (List<UpdateFeed>) q.execute();
-			System.out.println("Feeds"+feeds);
+			System.out.println("Feeds" + feeds);
 			if (!feeds.isEmpty()) {
 				// good for listing
 				for (UpdateFeed data : feeds) {
@@ -216,12 +235,9 @@ public class FeedSystemController {
 				}
 				System.out.println("Feeds: " + feedData);
 				response.getWriter().write(new Gson().toJson(feedData));
-			} else {
-
 			}
 		} finally {
 			q.closeAll();
 		}
-
 	}
 }

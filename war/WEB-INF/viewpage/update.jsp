@@ -45,7 +45,7 @@
 				    var date = new Date(istDate);
 					var newIstDate = date.toString();
 					newIstDate=newIstDate.split(' ').slice(0, 5).join(' ');
-					$("#container").append("<div id='feeds'>"+ "<h4>"+ parsingResponse[i+1]+ "</h4>"+"<p>"+ parsingResponse[i]+"<small>"+newIstDate+"</small></p><div>");
+					$("#container").append("<div id='feeds'>"+ "<h4>"+ parsingResponse[i+1]+ "</h4>"+"<p>"+ parsingResponse[i]+" "+newIstDate+"</p><div>");
 					i=i+3;
 				}
 			}
@@ -66,8 +66,12 @@
 								console.log(data);
 								var data1=data[0];
 								var data2=data[1];
-								var data3=data[2];
-								$("#container").prepend("<div id='feeds'>"+ "<h4>"+ data2+ "</h4>"+ "<p>"+ data1+ "<div>");
+								//var data3=Number(data[2]);
+								var istDate1 = (new Date(Number(data[2]))).toUTCString();	
+							    var date1 = new Date(istDate1);
+								var newIstDate1 = date1.toString();
+								newIstDate1=newIstDate1.split(' ').slice(0, 5).join(' ');
+								$("#container").prepend("<div id='feeds'>"+ "<h4>"+ data1+ "</h4>"+ "<p>"+ data2+" "+newIstDate1+"</p><div>");
 								$("#feedTextId").val("");
 							}
 						}
@@ -91,7 +95,6 @@
 		{
 			response.sendRedirect("/");
 		}
-		
 	%>
 </head>
 <body background="bgimg4.jpg" id="update_body"
