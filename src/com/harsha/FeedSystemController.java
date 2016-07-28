@@ -212,6 +212,7 @@ public class FeedSystemController {
 				for (UpdateFeed data : feeds) {
 					feedData.add(data.getFeed());
 					feedData.add(data.getUserMail());
+					feedData.add(Long.toString(data.getDate()));
 				}
 				System.out.println("Feeds: " + feedData);
 				response.getWriter().write(new Gson().toJson(feedData));

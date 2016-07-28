@@ -37,13 +37,16 @@
 				console.log(splitingTheResponse);
 				var parsingResponse=JSON.parse(splitingTheResponse);
 				console.log(parsingResponse);
-				for (i = 0; i < parsingResponse.length; i++) 
+				console.log(parsingResponse.length);
+				for (var i = 0; i < parsingResponse.length;) 
 				{
-					/* var istDate = (new Date(parsingResponse[i].date)).toUTCString();	
+					console.log("Long value:"+Number(parsingResponse[i+2]));
+					var istDate = (new Date(Number(parsingResponse[i+2]))).toUTCString();	
 				    var date = new Date(istDate);
 					var newIstDate = date.toString();
-					newIstDate=newIstDate.split(' ').slice(0, 5).join(' '); */
-					$("#container").prepend("<div id='feeds'>"+ "<h4>"+ parsingResponse[i]+ "</h4>"+ "<p>"+ parsingResponse[i+1]+ "<div>");
+					newIstDate=newIstDate.split(' ').slice(0, 5).join(' ');
+					$("#container").append("<div id='feeds'>"+ "<h4>"+ parsingResponse[i+1]+ "</h4>"+"<p>"+ parsingResponse[i]+"<small>"+newIstDate+"</small></p><div>");
+					i=i+3;
 				}
 			}
 		});
