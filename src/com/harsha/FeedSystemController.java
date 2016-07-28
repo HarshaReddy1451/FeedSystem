@@ -48,6 +48,7 @@ public class FeedSystemController {
 	public void getUsers(HttpServletResponse response) throws IOException
 	{
 		Query q = pm.newQuery(UserDetails.class);
+		q.setOrdering("signUpEmail desc");
 		List<UserDetails> results = null;
 		List userData1 = new ArrayList<String>();
 		try {
