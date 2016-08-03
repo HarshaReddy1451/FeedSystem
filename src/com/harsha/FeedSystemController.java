@@ -10,6 +10,7 @@ import java.util.List;
 
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -26,7 +27,7 @@ import com.google.gson.Gson;
 public class FeedSystemController {
 
 	PersistenceManager pm = PMF.get().getPersistenceManager();
-	List<String> userData, feedData;
+	List<String> userData, feedData,userMailId;
 	UserDetails userDetails;
 
 	@RequestMapping("/")
@@ -40,20 +41,21 @@ public class FeedSystemController {
 		System.out.println("Username to display:" + userData.get(0));
 		session.setAttribute("name", userData.get(0));
 		System.out.println(userData);
-		return new ModelAndView("update");
+		return new ModelAndView("update","userName",userData.get(0));
 	}
 
 	@SuppressWarnings("unchecked")
 	@RequestMapping(value = "/getUsers", method = RequestMethod.GET)
 	public void getUsers(HttpServletResponse response) throws IOException {
 		Query q = pm.newQuery(UserDetails.class);
-		q.setOrdering("signUpEmail desc");
+		q.setOrdering("signUpUserName desc");
 		List<UserDetails> results = null;
 		List userData1 = new ArrayList<String>();
 		try {
 			results = (List<UserDetails>) q.execute();
 			if (!results.isEmpty()) {
 				for (UserDetails data : results) {
+					userData1.add(data.getSignUpUserName());
 					userData1.add(data.getSignUpEmail());
 				}
 			}
@@ -96,7 +98,7 @@ public class FeedSystemController {
 		String feedText = request.getParameter("feed");
 		String userName = request.getParameter("userName");
 		String completeUserName = userName.substring(11);
-		System.out.println("Complete UserName:"+completeUserName);
+		System.out.println("Complete UserName:" + completeUserName);
 		long millis = System.currentTimeMillis();
 		Date date = new Date(millis);
 		UpdateFeed updateFeed = new UpdateFeed();
@@ -126,12 +128,12 @@ public class FeedSystemController {
 				q.closeAll();
 			}
 			String userNameToDisplay = new Gson().toJson(feedData1.get(1));
-			System.out.println("UserNameTDisplay:"+userNameToDisplay);
+			System.out.println("UserNameTDisplay:" + userNameToDisplay);
 			String feedToDisplay = new Gson().toJson(feedData1.get(0));
-			System.out.println("Feed To display:"+feedToDisplay);
-			String dateToDisplay= new Gson().toJson(feedData1.get(2));
-			String jsonObjects = "[" + userNameToDisplay + "," + feedToDisplay + "," + dateToDisplay + "]";
-			response.getWriter().write(jsonObjects);
+			System.out.println("Feed To display:" + feedToDisplay);
+			String dateToDisplay = new Gson().toJson(feedData1.get(2));
+			String jsonObjects = "[" + userNameToDisplay + "," + feedToDisplay + "," + dateToDisplay + "]";//creating json array
+			response.getWriter().write(jsonObjects);//sending response as json
 		}
 		return null;
 	}
@@ -183,9 +185,11 @@ public class FeedSystemController {
 	}
 
 	@RequestMapping(value = "/logout")
-	public String logout(HttpSession session) {
-		session.invalidate();
-		return "redirect:/";
+	public String logout(HttpServletRequest request) {
+		HttpSession session = request.getSession(false);
+			session.removeAttribute("name");
+			session.invalidate();
+			return "index";
 	}
 
 	@SuppressWarnings({ "unchecked", "null" })
@@ -240,4 +244,33 @@ public class FeedSystemController {
 			q.closeAll();
 		}
 	}
+	/*@SuppressWarnings("unchecked")
+	@RequestMapping(value="/getUserMail")
+	public void getUserMail(HttpServletRequest request, HttpServletResponse response) throws IOException
+	{
+		String name=request.getParameter("userMailId");
+		Query q = pm.newQuery(UserDetails.class);
+		q.setFilter("signUpUserName == signUpUserNameParam");
+		q.setOrdering("date desc");
+		q.declareParameters("String signUpUserNameParam");
+		List<UserDetails> mails=null;
+		userMailId=new ArrayList<>();
+		try
+		{
+			mails=(List<UserDetails>) q.execute(name);
+			System.out.println("Mails:"+mails);
+			if(!mails.isEmpty())
+			{	
+				for(UserDetails mailIds : mails)
+				{
+					userMailId.add(mailIds.getSignUpEmail());
+				}
+				System.out.println("Mails to display: "+ userMailId);
+				response.getWriter().write(new Gson().toJson(userMailId));
+			}
+		}
+		finally{
+			q.closeAll();
+		}
+	}*/
 }

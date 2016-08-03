@@ -4,16 +4,18 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Updates</title>
+<title>FeedSystem - Feeds</title>
 <link rel="stylesheet" type="text/css" href="home.css">
 <script type="text/javascript"
 	src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
 <script type="text/javascript">
-	$(document).ready(function() {
+	$(document).ready(function() 
+	{
 		$.ajax({
 			url :'/getUsers',
 			datatype:'json',
-			success: function(response){
+			success: function(response)
+			{
 				if(response!=null)
 				{
 					var splitingNames=response.split(",");
@@ -21,9 +23,20 @@
 					console.log(response +"is the Response.");
 					var parsedResponse=JSON.parse(splitingNames);
 					console.log(parsedResponse);
-					for(i=0;i<parsedResponse.length;i++)
+					console.log("length: "+parsedResponse.length);
+					for(var i=parsedResponse.length;i>0;)
 					{
-						$("#displayUsers").prepend("<div id='users'>"+parsedResponse[i]+"</div>");
+						if(parsedResponse[i-2]===parsedResponse[i-4])
+						{
+							console.log("matched Name:"+parsedResponse[i-2]);
+							$("#displayUsers").append("<div id='users'>"+parsedResponse[i-2]+" ("+parsedResponse[i-1]+")</div>");
+						}
+						else
+						{
+							console.log("Single Names to display: "+parsedResponse[i-2]);
+							$("#displayUsers").append("<div id='users'>"+parsedResponse[i-2]+"</div>");
+						}
+						i=i-2;
 					}
 				}
 			}
@@ -41,10 +54,13 @@
 				for (var i = 0; i < parsingResponse.length;) 
 				{
 					console.log("Long value:"+Number(parsingResponse[i+2]));
-					var istDate = (new Date(Number(parsingResponse[i+2]))).toUTCString();	
+					var istDate = (new Date(Number(parsingResponse[i+2]))).toUTCString("dd-MM-yyyy'T'HH:mm:ss a");
+					console.log("ISTDate: "+ istDate);
 				    var date = new Date(istDate);
+				    console.log("Date: "+date);
 					var newIstDate = date.toString();
 					newIstDate=newIstDate.split(' ').slice(0, 5).join(' ');
+					console.log("newISTDate; "+newIstDate);
 					$("#container").append("<div id='feeds'>"+ "<h4>"+ parsingResponse[i+1]+ "</h4>"+"<p>"+ parsingResponse[i]+" "+newIstDate+"</p><div>");
 					i=i+3;
 				}
@@ -91,8 +107,10 @@
 		response.setHeader("Pragma", "no-cache");
 	%>
 	<%
-		if(session==null)
+		System.out.println(session.getAttribute("name"));
+		if(session.getAttribute("name")==null)
 		{
+			
 			response.sendRedirect("/");
 		}
 	%>

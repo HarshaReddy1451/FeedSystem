@@ -9,13 +9,12 @@
 <!-- but may lead to some differences in layout.   -->
 <html>
 <head>
-<title>Home Page</title>
+<title>FeedSystem</title>
 <link rel="stylesheet" type="text/css" href="home.css">
 <link rel="stylesheet"
 	href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
 <script	src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
-
 <script type="text/javascript">
 			$(document).ready(function(){
 				$("#signUpButton").click(function(){
@@ -47,6 +46,7 @@
 									{
 										$("#myModal1").modal();
 										$("#userNameId").focus();
+										$("#signUpFooter").hide();
 										$("#signUpFooter").append("<p><strong>User Already Exists.</strong></p>");
 									}	
 									else if(data.trim() === "false")
@@ -59,7 +59,7 @@
 					}
 					else
 					{
-						$("#signUpFooter").append("<p><strong>Enter the details properly.</strong></p>");
+						$("#signUpFooter").append("<p id='error'><strong>Enter the details properly.</strong></p>");
 						$("#userNameId").val("");
 						$("#passwordId").val("");
 						$("#confirmPasswordId").val("");
@@ -113,7 +113,12 @@
 						$("#loginEmailId").focus();
 					}
 				});
-				
+				$("#signUpClose").click(function(){
+					$("#signUpFooter").html("");
+				});
+				$("#loginClose").click(function(){
+					$("#loginFooter").html("");
+				});
 			});
 		</script>
 		<%
@@ -123,6 +128,7 @@
 			response.setHeader("Pragma", "no-cache");
 		%>
 		<%
+			System.out.println(session.getAttribute("name"));
 			if(session.getAttribute("name")!=null)
 			{
 				response.sendRedirect("/update");
@@ -141,7 +147,7 @@
 				<!-- Modal content-->
 				<div class="modal-content">
 					<div class="modal-header">
-						<button type="button" class="close" data-dismiss="modal">&times;</button>
+						<button type="button" id="loginClose" class="close" data-dismiss="modal">&times;</button>
 						<h4 class="modal-title">Login</h4>
 					</div>
 					<div class="modal-body">
@@ -178,7 +184,7 @@
 				<!-- Modal content-->
 				<div class="modal-content">
 					<div class="modal-header">
-						<button type="button" class="close" data-dismiss="modal">&times;</button>
+						<button type="button" id="signUpClose" class="close" data-dismiss="modal">&times;</button>
 						<h4 class="modal-title">SignUp</h4>
 					</div>
 					<div class="modal-body">

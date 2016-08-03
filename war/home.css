@@ -163,6 +163,7 @@ p
 	background-color: white;
 	overflow: scroll;
 	overflow-x: hidden;
+	font-size: 17px;
 }
 #signUpBtn
 {
