@@ -7,6 +7,9 @@ import javax.jdo.annotations.Persistent;
 public class UpdateFeed {
 
 	@Persistent
+	private String userName;
+	
+	@Persistent
 	private String feed;
 	
 	@Persistent
@@ -40,5 +43,12 @@ public class UpdateFeed {
 	{
 		return feed;
 	}
-	
+
+	public String getUserName() {
+		return userName;
+	}
+
+	public void setUserName(String userName) {
+		this.userName = userName;
+	}
 }

@@ -93,7 +93,7 @@ h3
 	margin-left: 600px;
 	margin-top: 60px;
 }
-#feeds
+.feeds
 {
 	margin-top: 10px;
 	margin-bottom:10px;
@@ -174,7 +174,7 @@ p
 	font-weight: bold;
 	border-radius: 4px;
 }
-#users
+.users
 {
 	height : 30px;
 	border-style: none;

@@ -1,16 +1,13 @@
 package com.harsha;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
-import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -40,6 +37,7 @@ public class FeedSystemController {
 		HttpSession session = request.getSession();
 		System.out.println("Username to display:" + userData.get(0));
 		session.setAttribute("name", userData.get(0));
+		session.setAttribute("mail", userData.get(1));
 		System.out.println(userData);
 		return new ModelAndView("update","userName",userData.get(0));
 	}
@@ -48,24 +46,20 @@ public class FeedSystemController {
 	@RequestMapping(value = "/getUsers", method = RequestMethod.GET)
 	public void getUsers(HttpServletResponse response) throws IOException {
 		Query q = pm.newQuery(UserDetails.class);
-		q.setOrdering("signUpUserName desc");
-		List<UserDetails> results = null;
-		List userData1 = new ArrayList<String>();
-		try {
-			results = (List<UserDetails>) q.execute();
-			if (!results.isEmpty()) {
-				for (UserDetails data : results) {
-					userData1.add(data.getSignUpUserName());
-					userData1.add(data.getSignUpEmail());
+		try{
+			q.setOrdering("signUpUserName asc");
+			List<UserDetails> results = null;
+				results = (List<UserDetails>) q.execute();
+				if (!results.isEmpty()) {
+					System.out.println(results);
+					response.getWriter().write(new Gson().toJson(results));
 				}
-			}
-		} finally {
+		}
+		finally
+		{
 			q.closeAll();
 		}
-		System.out.println(userData1);
-		response.getWriter().write(new Gson().toJson(userData1));
 	}
-
 	@RequestMapping(value = "/signupData", method = RequestMethod.GET)
 	public ModelAndView signUpData() {
 		System.out.println(userDetails.getSignUpUserName());
@@ -97,41 +91,24 @@ public class FeedSystemController {
 	public ModelAndView update(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		String feedText = request.getParameter("feed");
 		String userName = request.getParameter("userName");
+		String userMail = request.getParameter("userMail");
 		String completeUserName = userName.substring(11);
 		System.out.println("Complete UserName:" + completeUserName);
+		System.out.println("userMail:"+userMail.substring(11));
 		long millis = System.currentTimeMillis();
-		Date date = new Date(millis);
 		UpdateFeed updateFeed = new UpdateFeed();
 		if (!feedText.equals("")) {
 			updateFeed.setFeed(feedText);
-			updateFeed.setUserMail(completeUserName);
+			updateFeed.setUserMail(userMail);
 			updateFeed.setDate(millis);
-			System.out.println(updateFeed.getUserMail());
+			updateFeed.setUserName(completeUserName);
+			System.out.println("userMail:"+updateFeed.getUserMail());
 			pm.makePersistent(updateFeed);
-			Query q = pm.newQuery(UpdateFeed.class);
-			q.setOrdering("date desc");
-			List<UpdateFeed> feeds = null;
-			List<String> feedData1 = new ArrayList<>();
-			try {
-				feeds = (List<UpdateFeed>) q.execute();
-				System.out.println("Feeds" + feeds);
-				if (!feeds.isEmpty()) {
-					// good for listing
-					for (UpdateFeed data : feeds) {
-						feedData1.add(data.getFeed());
-						feedData1.add(data.getUserMail());
-						feedData1.add(Long.toString(data.getDate()));
-					}
-					System.out.println("Feeds: " + feedData1);
-				}
-			} finally {
-				q.closeAll();
-			}
-			String userNameToDisplay = new Gson().toJson(feedData1.get(1));
+			String userNameToDisplay = new Gson().toJson(completeUserName);
 			System.out.println("UserNameTDisplay:" + userNameToDisplay);
-			String feedToDisplay = new Gson().toJson(feedData1.get(0));
+			String feedToDisplay = new Gson().toJson(feedText);
 			System.out.println("Feed To display:" + feedToDisplay);
-			String dateToDisplay = new Gson().toJson(feedData1.get(2));
+			String dateToDisplay = new Gson().toJson(millis);
 			String jsonObjects = "[" + userNameToDisplay + "," + feedToDisplay + "," + dateToDisplay + "]";//creating json array
 			response.getWriter().write(jsonObjects);//sending response as json
 		}
@@ -195,14 +172,14 @@ public class FeedSystemController {
 	@SuppressWarnings({ "unchecked", "null" })
 	public List<String> data(String userName) {
 		Query q = pm.newQuery(UserDetails.class);
-		q.setFilter("signUpEmail == signUpEmailParam");
-		q.setOrdering("date desc");
-		q.declareParameters("String signUpEmailParam");
-		List<UserDetails> results = null;
-		userData = new ArrayList<String>();
-		try {
+		try{
+			q.setFilter("signUpEmail == signUpEmailParam");
+			q.setOrdering("date desc");
+			q.declareParameters("String signUpEmailParam");
+			List<UserDetails> results = null;
+			userData = new ArrayList<String>();
 			results = (List<UserDetails>) q.execute(userName);
-			if (!results.isEmpty()) {
+			if (!results.isEmpty() && !(results==null)) {
 				for (UserDetails data : results) {
 					userData.add(data.getSignUpUserName());
 					userData.add(data.getSignUpEmail());
@@ -226,51 +203,15 @@ public class FeedSystemController {
 		Query q = pm.newQuery(UpdateFeed.class);
 		q.setOrdering("date desc");
 		List<UpdateFeed> feeds = null;
-		feedData = new ArrayList<>();
 		try {
 			feeds = (List<UpdateFeed>) q.execute();
 			System.out.println("Feeds" + feeds);
-			if (!feeds.isEmpty()) {
-				// good for listing
-				for (UpdateFeed data : feeds) {
-					feedData.add(data.getFeed());
-					feedData.add(data.getUserMail());
-					feedData.add(Long.toString(data.getDate()));
-				}
-				System.out.println("Feeds: " + feedData);
-				response.getWriter().write(new Gson().toJson(feedData));
+			if (!(feeds==null) && !feeds.isEmpty()) {
+				System.out.println("Feeds: " + feeds);
+				response.getWriter().write(new Gson().toJson(feeds));
 			}
 		} finally {
 			q.closeAll();
 		}
 	}
-	/*@SuppressWarnings("unchecked")
-	@RequestMapping(value="/getUserMail")
-	public void getUserMail(HttpServletRequest request, HttpServletResponse response) throws IOException
-	{
-		String name=request.getParameter("userMailId");
-		Query q = pm.newQuery(UserDetails.class);
-		q.setFilter("signUpUserName == signUpUserNameParam");
-		q.setOrdering("date desc");
-		q.declareParameters("String signUpUserNameParam");
-		List<UserDetails> mails=null;
-		userMailId=new ArrayList<>();
-		try
-		{
-			mails=(List<UserDetails>) q.execute(name);
-			System.out.println("Mails:"+mails);
-			if(!mails.isEmpty())
-			{	
-				for(UserDetails mailIds : mails)
-				{
-					userMailId.add(mailIds.getSignUpEmail());
-				}
-				System.out.println("Mails to display: "+ userMailId);
-				response.getWriter().write(new Gson().toJson(userMailId));
-			}
-		}
-		finally{
-			q.closeAll();
-		}
-	}*/
 }

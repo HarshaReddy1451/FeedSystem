@@ -18,25 +18,14 @@
 			{
 				if(response!=null)
 				{
-					var splitingNames=response.split(",");
-					console.log(splitingNames);
 					console.log(response +"is the Response.");
-					var parsedResponse=JSON.parse(splitingNames);
-					console.log(parsedResponse);
+					var parsedResponse=JSON.parse(response);
+					console.log("Parsed Response:"+parsedResponse);
 					console.log("length: "+parsedResponse.length);
-					for(var i=parsedResponse.length;i>0;)
+					for(var i=0;i<parsedResponse.length;i++)
 					{
-						if(parsedResponse[i-2]===parsedResponse[i-4])
-						{
-							console.log("matched Name:"+parsedResponse[i-2]);
-							$("#displayUsers").append("<div id='users'>"+parsedResponse[i-2]+" ("+parsedResponse[i-1]+")</div>");
-						}
-						else
-						{
-							console.log("Single Names to display: "+parsedResponse[i-2]);
-							$("#displayUsers").append("<div id='users'>"+parsedResponse[i-2]+"</div>");
-						}
-						i=i-2;
+						
+						$("#displayUsers").append("<div class='users'>"+parsedResponse[i].signUpUserName+"</div>");
 					}
 				}
 			}
@@ -46,35 +35,34 @@
 			datatype:'json',
 			success: function(feeds){
 				console.log(feeds);
-				var splitingTheResponse=feeds.split(",");
-				console.log(splitingTheResponse);
-				var parsingResponse=JSON.parse(splitingTheResponse);
-				console.log(parsingResponse);
+				var parsingResponse=JSON.parse(feeds);
+				console.log("parseingResponse: "+parsingResponse);
 				console.log(parsingResponse.length);
-				for (var i = 0; i < parsingResponse.length;) 
+				for(var i=0; i<parsingResponse.length;i++)
 				{
-					console.log("Long value:"+Number(parsingResponse[i+2]));
-					var istDate = (new Date(Number(parsingResponse[i+2]))).toUTCString("dd-MM-yyyy'T'HH:mm:ss a");
+					console.log("Long value:"+parsingResponse[i].date);
+					var istDate = (new Date(parsingResponse[i].date)).toUTCString();
 					console.log("ISTDate: "+ istDate);
 				    var date = new Date(istDate);
 				    console.log("Date: "+date);
 					var newIstDate = date.toString();
-					newIstDate=newIstDate.split(' ').slice(0, 5).join(' ');
+					newIstDate=newIstDate.split(' ').slice(0,5).join(' ');
 					console.log("newISTDate; "+newIstDate);
-					$("#container").append("<div id='feeds'>"+ "<h4>"+ parsingResponse[i+1]+ "</h4>"+"<p>"+ parsingResponse[i]+" "+newIstDate+"</p><div>");
-					i=i+3;
+					$("#container").append("<div class='feeds'>"+ "<h4>"+ parsingResponse[i].userName+ "</h4>"+"<p>"+ parsingResponse[i].feed+" "+newIstDate+"</p><div>");
 				}
 			}
 		});
 		$("#button_update").click(function() {
 			var feed = $("#feedTextId").val();
 			var userName = $("#username").text();
+			var userMail = $("#mailId").text();
+			console.log("UserMail: "+userMail);
 			if (feed != "") {
 					$.ajax({
 						url : '/updateservlet',
 						type : 'post',
 						dataType : 'json',
-						data : {"userName" : userName,"feed" : feed},
+						data : {"userName" : userName,"feed" : feed,"userMail":userMail},
 						success : function(data) 
 						{
 							if (data!= "") 
@@ -123,6 +111,10 @@
 	<p id='username'>
 		<strong>Welcome:<% String userName=(String) session.getAttribute("name");
 		out.println(userName);%></strong>
+	</p>
+	<p id='mailId'>
+		<strong><% String mailId=(String) session.getAttribute("mail");
+		out.println(mailId);%></strong>
 	</p>
 	<input type="text" name="search" placeholder="Search..."
 		class="search_box" />
