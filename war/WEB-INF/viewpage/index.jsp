@@ -59,7 +59,9 @@
 					}
 					else
 					{
-						$("#signUpFooter").append("<p id='error'><strong>Enter the details properly.</strong></p>");
+						$("#signUpFooter").html("<p id='error'><strong>Enter the details properly.</strong></p>");
+						$("#signUpFooter").hide();
+						$("#signUpFooter").show();
 						$("#userNameId").val("");
 						$("#passwordId").val("");
 						$("#confirmPasswordId").val("");
@@ -107,7 +109,7 @@
 					}
 					else
 					{
-						$("#loginFooter").append("<p><strong>Enter proper emailId.</strong></p>");
+						$("#loginFooter").html("<p><strong>Enter proper emailId.</strong></p>");
 						$("#loginEmailId").val("");
 						$("#loginPasswordId").val("");
 						$("#loginEmailId").focus();
@@ -128,7 +130,7 @@
 			response.setHeader("Pragma", "no-cache");
 		%>
 		<%
-			System.out.println(session.getAttribute("name"));
+			/* System.out.println(session.getAttribute("name")); */
 			if(session.getAttribute("name")!=null)
 			{
 				response.sendRedirect("/update");

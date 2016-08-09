@@ -40,7 +40,7 @@ hr
 	color: white;
 	height: 35px;
 	border-radius: 4px;
-	margin-left: 270px;
+	margin-left: 530px;
 }
 .login
 {
@@ -55,8 +55,8 @@ hr
 	border: 0px solid black;
 	margin: 0 auto; 
 	float: right;
-	margin-right: 80px; 
-	width: 900px;
+	margin-right: 200px; 
+	width: 700px;
 	height: 350px;
 	background-color: white;
 	overflow: scroll;
@@ -67,20 +67,29 @@ h4
 {
 	margin-left: 10px;
 }
-.search_button
+#search
 {
-	border: 1px solid #5cb85c;
-	color: white;
-	height: 30px;
-	border-radius: 4px;
-	background-color: #5cb85c;
-}
-.search_box
-{
-	margin-left : 1070px;
+	float: right;
 	height: 27px;
 	border: 1px solid white;
 	border-radius: 4px;
+}
+#usersList
+{
+	float:right;
+	height: 27px;
+	border: 1px solid white;
+	border-radius: 4px;
+	background-color: white;
+	width:170px;
+	height : 100px;
+	overflow: scroll;
+	overflow-x: hidden;
+}
+li
+{
+	margin-right: 100px;
+	list-style-type:none;
 }
 textarea
 {
@@ -158,7 +167,7 @@ p
 	margin-top: 90px;
 	float : left;
 	width : 300px;
-	height : 355px;
+	height : 350px;
 	border: 0px solid black;
 	background-color: white;
 	overflow: scroll;
@@ -181,4 +190,8 @@ p
 	border-radius: 2px;
 	margin-left: 5px;
 	margin-right: 5px;
+}
+#feedTextId
+{
+	margin-left:250px;
 }

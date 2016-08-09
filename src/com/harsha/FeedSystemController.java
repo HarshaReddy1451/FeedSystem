@@ -89,10 +89,18 @@ public class FeedSystemController {
 	@SuppressWarnings("unchecked")
 	@RequestMapping(value = "/updateservlet", method = RequestMethod.POST)
 	public ModelAndView update(HttpServletRequest request, HttpServletResponse response) throws IOException {
+		
+		String userName1 = (String)request.getSession().getAttribute("name");
+		System.out.println(userName1);
+		if (null == userName1) {
+		   request.setAttribute("Error", "Session has ended.  Please login.");
+		  return new ModelAndView("signup");
+		}
+		
 		String feedText = request.getParameter("feed");
 		String userName = request.getParameter("userName");
 		String userMail = request.getParameter("userMail");
-		String completeUserName = userName.substring(11);
+		String completeUserName = userName.substring(8);
 		System.out.println("Complete UserName:" + completeUserName);
 		System.out.println("userMail:"+userMail.substring(11));
 		long millis = System.currentTimeMillis();
