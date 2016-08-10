@@ -48,9 +48,10 @@
 		});
 		$("#search").keyup(function(){
 			var searchText=$("#search").val();
+			var users=[];
+			var searchList='';
 			if(searchText!=null)
 			{
-				var users=[];
 				for(var j=0;j<parsedResponse.length;j++)
 				{
 					console.log("UserNames: "+parsedResponse[j].signUpUserName);
@@ -59,23 +60,33 @@
 					{
 						users[j]=name.charAt(0).toUpperCase()+name.slice(1);
 					}
-					else
-					{
-						$("#usersList").hide();
-					}
-					if(users[j]!=null)
-					{
-						$("#usersList ul").append("<li>"+users[j]+"</li>");
-					}
 					console.log("Users:"+users);
 				}
-				$("#usersList").show();
-				if($("#search").val()=="")
+			}
+			if(users!=null)
+			{
+				for(var k=0;k<users.length;k++)
 				{
-					$("#usersList ul").html("");
-					console.log("Users:"+users);
-					$("#usersList").hide();
+					if(users[k]!=null)
+					{
+						console.log("Users Users: "+users[k]);
+						searchList=searchList.concat("<li>"+users[k]+"</li>");
+					}
 				}
+				if(searchList==""){
+					$("#usersList ul").html("No result");
+					$("#usersList").show();
+				}else{
+					console.log("searchList: "+searchList)
+					$("#usersList ul").html(searchList);
+					$("#usersList").show();
+				}
+			}
+			if($("#search").val()=="")
+			{
+				$("#usersList ul").html("");
+				console.log("Users:"+users);
+				$("#usersList").hide();
 			}
 		});
 		$.ajax({
