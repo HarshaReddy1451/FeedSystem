@@ -48,16 +48,14 @@
 		});
 		$("#search").keyup(function(){
 			var searchText=$("#search").val();
-			var searchText1="";
-			var searchText2=searchText1.concat(searchText);
-			var users=new Array();
-			if(searchText2!=null)
+			if(searchText!=null)
 			{
+				var users=[];
 				for(var j=0;j<parsedResponse.length;j++)
 				{
 					console.log("UserNames: "+parsedResponse[j].signUpUserName);
 					var name=(parsedResponse[j].signUpUserName).toLowerCase();
-					if(name.includes(searchText2))
+					if(name.includes(searchText))
 					{
 						users[j]=name.charAt(0).toUpperCase()+name.slice(1);
 					}
@@ -65,20 +63,15 @@
 					{
 						$("#usersList").hide();
 					}
-					console.log("J value: "+j);
-					console.log("Users:"+users[j]);
-				}
-				if(users!=null)
-				{
-					for(var k=0;k<users.length;k++)
+					if(users[j]!=null)
 					{
-						$("#usersList ul").append("<li>"+users[k]+"</li>");
+						$("#usersList ul").append("<li>"+users[j]+"</li>");
 					}
+					console.log("Users:"+users);
 				}
 				$("#usersList").show();
 				if($("#search").val()=="")
 				{
-					users=[];
 					$("#usersList ul").html("");
 					console.log("Users:"+users);
 					$("#usersList").hide();
@@ -153,7 +146,6 @@
 		System.out.println(session.getAttribute("name"));
 		if(session.getAttribute("name")==null)
 		{
-			
 			response.sendRedirect("/");
 		}
 	%>
