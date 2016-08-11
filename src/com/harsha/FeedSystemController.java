@@ -45,9 +45,9 @@ public class FeedSystemController {
 	@SuppressWarnings("unchecked")
 	@RequestMapping(value = "/getUsers", method = RequestMethod.GET)
 	public void getUsers(HttpServletResponse response) throws IOException {
-		Query q = pm.newQuery(UserDetails.class);
+		String queryStr = "select FROM " + UserDetails.class.getName() + " ORDER BY signUpUserName ASC";
+		Query q = pm.newQuery(queryStr);
 		try{
-			q.setOrdering("signUpUserName asc");
 			List<UserDetails> results = null;
 				results = (List<UserDetails>) q.execute();
 				if (!results.isEmpty()) {
@@ -92,11 +92,6 @@ public class FeedSystemController {
 		
 		String userName1 = (String)request.getSession().getAttribute("name");
 		System.out.println(userName1);
-		if (null == userName1) {
-		   request.setAttribute("Error", "Session has ended.  Please login.");
-		  return new ModelAndView("signup");
-		}
-		
 		String feedText = request.getParameter("feed");
 		String userName = request.getParameter("userName");
 		String userMail = request.getParameter("userMail");
@@ -179,11 +174,8 @@ public class FeedSystemController {
 
 	@SuppressWarnings({ "unchecked", "null" })
 	public List<String> data(String userName) {
-		Query q = pm.newQuery(UserDetails.class);
+		Query q = pm.newQuery("select from "+UserDetails.class.getName()+" where signUpEmail == signUpEmailParam "+"parameters String signUpEmailParam "+"order by date desc");
 		try{
-			q.setFilter("signUpEmail == signUpEmailParam");
-			q.setOrdering("date desc");
-			q.declareParameters("String signUpEmailParam");
 			List<UserDetails> results = null;
 			userData = new ArrayList<String>();
 			results = (List<UserDetails>) q.execute(userName);
@@ -208,8 +200,8 @@ public class FeedSystemController {
 	@SuppressWarnings("unchecked")
 	@RequestMapping(value = "/fetchUpdates")
 	public void fetchUpdates(HttpServletResponse response) throws IOException {
-		Query q = pm.newQuery(UpdateFeed.class);
-		q.setOrdering("date desc");
+		Query q = pm.newQuery("select from "+UpdateFeed.class.getName()+" order by date desc");
+		/*q.setOrdering("date desc");*/
 		List<UpdateFeed> feeds = null;
 		try {
 			feeds = (List<UpdateFeed>) q.execute();
