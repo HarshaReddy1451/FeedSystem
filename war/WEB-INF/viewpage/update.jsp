@@ -48,44 +48,54 @@
 		});
 		$("#search").keyup(function(){
 			var searchText=$("#search").val();
-			var users=[];
-			var searchList='';
+			var searchResults=[];
+			var searchResultsList='';
 			if(searchText!=null)
 			{
 				for(var j=0;j<parsedResponse.length;j++)
 				{
 					console.log("UserNames: "+parsedResponse[j].signUpUserName);
-					var name=(parsedResponse[j].signUpUserName).toLowerCase();
-					if(name.includes(searchText))
+					if(searchText==searchText.toUpperCase())
 					{
-						users[j]=name.charAt(0).toUpperCase()+name.slice(1);
+						if((parsedResponse[j].signUpUserName).includes(searchText))
+						{
+							searchResults[j]=(parsedResponse[j].signUpUserName);
+						}
 					}
-					console.log("Users:"+users);
+					if(searchText==searchText.toLowerCase())
+					{
+						var name=(parsedResponse[j].signUpUserName).toLowerCase();
+						if(name.includes(searchText))
+						{
+							searchResults[j]=name.charAt(0).toUpperCase()+name.slice(1);;
+						}
+					}
+					console.log("Users:"+searchResults);
 				}
 			}
-			if(users!=null)
+			if(searchResults!=null)
 			{
-				for(var k=0;k<users.length;k++)
+				for(var k=0;k<searchResults.length;k++)
 				{
-					if(users[k]!=null)
+					if(searchResults[k]!=null)
 					{
-						console.log("Users Users: "+users[k]);
-						searchList=searchList.concat("<li>"+users[k]+"</li>");
+						console.log("Users Users: "+searchResults[k]);
+						searchResultsList=searchResultsList.concat("<li>"+searchResults[k]+"</li>");
 					}
 				}
-				if(searchList==""){
+				if(searchResultsList==""){
 					$("#usersList ul").html("No result");
 					$("#usersList").show();
 				}else{
-					console.log("searchList: "+searchList)
-					$("#usersList ul").html(searchList);
+					console.log("searchList: "+searchResultsList)
+					$("#usersList ul").html(searchResultsList);
 					$("#usersList").show();
 				}
 			}
 			if($("#search").val()=="")
 			{
 				$("#usersList ul").html("");
-				console.log("Users:"+users);
+				console.log("Users:"+searchResults);
 				$("#usersList").hide();
 			}
 		});
