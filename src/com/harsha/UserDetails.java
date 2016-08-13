@@ -21,8 +21,12 @@ public class UserDetails {
 	@Persistent
 	private boolean isDelete;
 
+	@Persistent
 	private String source;
 
+	@Persistent
+	private String profilePicture;
+	
 	public String getSignUpUserName() {
 		return signUpUserName;
 	}
@@ -72,5 +76,15 @@ public class UserDetails {
 	public String getSource()
 	{
 		return source;
+	}
+
+	public void setProfilePic(String picture) {
+		// TODO Auto-generated method stub
+		this.profilePicture=picture;
+	}
+	
+	public String getProfilePic()
+	{
+		return profilePicture;
 	}
 }

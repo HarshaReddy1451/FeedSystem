@@ -27,7 +27,8 @@
 					var className=new Array();
 					for(var i=0;i<parsedResponse.length;i++)
 					{
-						className[i]=parsedResponse[i].signUpUserName.trim("");
+						className[i]=parsedResponse[i].signUpUserName.replace(" ","-");
+						console.log("Trimmed ClassNames: "+className[i]);
 						$("#displayUsers").append("<div class='users'>"+parsedResponse[i].signUpUserName+"<div class="+className[i]+">("+parsedResponse[i].signUpEmail+")</div></div><br>");
 						$("."+className[i]).hide();
 						console.log("ClassNames: "+className[i]);
@@ -62,7 +63,7 @@
 							searchResults[j]=(parsedResponse[j].signUpUserName);
 						}
 					}
-					if(searchText==searchText.toLowerCase())
+					else if(searchText==searchText.toLowerCase())
 					{
 						var name=(parsedResponse[j].signUpUserName).toLowerCase();
 						if(name.includes(searchText))
@@ -126,7 +127,7 @@
 			var userName = $("#username").text();
 			var userMail = $("#mailId").text();
 			console.log("UserMail: "+userMail);
-			if (feed != "") {
+			if (feed != "" && userName!=null && userMail!=null && !userName=="" && !userMail =="") {
 					$.ajax({
 						url : '/updateservlet',
 						type : 'post',
@@ -154,6 +155,35 @@
 				{
 					alert("Feed should not empty.");
 				}
+		});
+		$("#username").click(function(){
+			/* var userName = $("#username").text();
+			var userMail = $("#mailId").text();
+			var completeUserName=userName.slice(8);
+			console.log(completeUserName);
+			console.log(userMail);
+			if (completeUserName!=null && userMail!=null && !completeUserName=="" && !userMail =="")
+			{
+				$.ajax({
+					url:"/settings",
+					datatype:"json",
+					type:"post",
+					data:{"userName":completeUserName,"userMail":userMail},
+					success:function(data)
+					{
+						if(data!="" && data!=null)
+						{
+							console.log(data);
+							var name=data[0];
+							var mail=data[1];
+							console.log("Name :"+name);
+							console.log("Mail :"+mail);
+							
+						}
+					}
+				});
+			}*/
+			window.location.href="/settings";
 		});
 	});
 </script>

@@ -4,5 +4,7 @@
 	<classpathentry kind="con" path="com.google.appengine.eclipse.core.GAE_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Spring"/>
+	<classpathentry kind="lib" path="C:/Users/User/Desktop/json-simple-1.1.1.jar"/>
+	<classpathentry kind="con" path="com.google.gdt.eclipse.managedapis.MANAGED_API_CONTAINER/gmail-v1r48lv1.21.0"/>
 	<classpathentry kind="output" path="war/WEB-INF/classes"/>
 </classpath>

@@ -167,6 +167,10 @@
 									<td><input type="submit" value="Login" width="50" id="loginButton"
 										height="25" class="login" style="background-color: #5cb85c" /></td>
 								</tr>
+								<tr>
+									<td><br><input type="submit" onclick="window.location.href='/loginWithGoogle'" value="Login With Google" width="50" id="loginWithGoogle"
+										height="25" class="login" style="background-color: #5cb85c" /></td>
+								</tr>
 							</table>
 						<!-- </form> -->
 					</div>
@@ -210,6 +214,10 @@
 								</tr>
 								<tr>
 									<td><input type="submit" value="SignUp" width="50" id="signUpButton"
+										height="25" class="signup" style="background-color: #5cb85c" /></td>
+								</tr>
+								<tr>
+									<td><br><input type="submit" value="SignUp With Google" onclick="window.location.href='/goWithGoogle'" width="50" id="signUpWithGoolge"
 										height="25" class="signup" style="background-color: #5cb85c" /></td>
 								</tr>
 							</table>

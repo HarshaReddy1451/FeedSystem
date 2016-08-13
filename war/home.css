@@ -86,9 +86,13 @@ h4
 	overflow: scroll;
 	overflow-x: hidden;
 }
+#usersList ul
+{
+	margin-right:50px;
+}
 li
 {
-	margin-right: 100px;
+	margin-right: 50px;
 	list-style-type:none;
 }
 textarea
