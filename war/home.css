@@ -199,3 +199,9 @@ p
 {
 	margin-left:250px;
 }
+#settingsDiv
+{
+	background-color: white;
+	margin: auto;
+	width:50%;
+}

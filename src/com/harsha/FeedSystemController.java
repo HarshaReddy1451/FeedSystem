@@ -35,6 +35,7 @@ public class FeedSystemController {
 	List<String> userData, feedData, userMailId;
 	UserDetails userDetails;
 	String userMail,userName,picture;
+	String userMail1,userName1;
 
 	@RequestMapping("/")
 	public String home() {
@@ -227,7 +228,7 @@ public class FeedSystemController {
 	@RequestMapping("/goWithGoogle")
 	public ModelAndView signUpWithGoogle()
 	{
-		return new ModelAndView("redirect:https://accounts.google.com/o/oauth2/auth?redirect_uri=http://localhost:8080/get_auth_code&response_type=code&client_id=187391095236-ikc9rlbs4ldqta29d1ejuf2756qba77s.apps.googleusercontent.com&approval_prompt=force&scope=email&access_type=online");
+		return new ModelAndView("redirect:https://accounts.google.com/o/oauth2/auth?redirect_uri=http://feedsys.appspot.com/get_auth_code&response_type=code&client_id=187391095236-ikc9rlbs4ldqta29d1ejuf2756qba77s.apps.googleusercontent.com&approval_prompt=force&scope=email&access_type=online");
 	}
 	
 	@RequestMapping(value="/get_auth_code")
@@ -244,7 +245,7 @@ public class FeedSystemController {
 		
 		URL url = new URL("https://www.googleapis.com/oauth2/v3/token?"
 				+ "client_id=187391095236-ikc9rlbs4ldqta29d1ejuf2756qba77s.apps.googleusercontent.com"
-				+ "&client_secret=htzLprFZYXa2RNT4qxTvZ4cp&" + "redirect_uri=http://localhost:8080/get_auth_code&"
+				+ "&client_secret=htzLprFZYXa2RNT4qxTvZ4cp&" + "redirect_uri=http://feedsys.appspot.com/get_auth_code&"
 				+ "grant_type=authorization_code&" + "code=" + auth_code);
 		HttpURLConnection connect = (HttpURLConnection) url.openConnection();
 		connect.setRequestMethod("POST");
@@ -321,6 +322,7 @@ public class FeedSystemController {
 			long millis;
 			userDetails.setDate(millis = System.currentTimeMillis());
 			userData = data(userDetails.getSignUpEmail());
+			System.out.println("UserData: "+userData);
 			if(!userData.contains(userMail))
 			{
 				try
@@ -340,13 +342,93 @@ public class FeedSystemController {
 	@RequestMapping("/loginWithGoogle")
 	public ModelAndView loginWithGoogle()
 	{
-		return new ModelAndView("redirect:https://accounts.google.com/o/oauth2/auth?redirect_uri=http://localhost:8080/get_auth_code&response_type=code&client_id=187391095236-ikc9rlbs4ldqta29d1ejuf2756qba77s.apps.googleusercontent.com&approval_prompt=force&scope=email&access_type=online");
+		return new ModelAndView("redirect:https://accounts.google.com/o/oauth2/auth?redirect_uri=http://feedsys.appspot.com/get_code&response_type=code&client_id=187391095236-ikc9rlbs4ldqta29d1ejuf2756qba77s.apps.googleusercontent.com&approval_prompt=force&scope=email&access_type=online");
+	}
+	
+	@RequestMapping(value="/get_code")
+	public String get_code1(@RequestParam String code, HttpServletRequest req,
+			HttpServletResponse resp) throws IOException
+	{
+		
+		// code for getting authorization_code
+		System.out.println("Getting Authorization.");
+		String auth_code = code;
+		System.out.println(auth_code);
+		
+		//code for getting access token
+		
+		URL url = new URL("https://www.googleapis.com/oauth2/v3/token?"
+				+ "client_id=187391095236-ikc9rlbs4ldqta29d1ejuf2756qba77s.apps.googleusercontent.com"
+				+ "&client_secret=htzLprFZYXa2RNT4qxTvZ4cp&" + "redirect_uri=http://feedsys.appspot.com/get_code&"
+				+ "grant_type=authorization_code&" + "code=" + auth_code);
+		HttpURLConnection connect = (HttpURLConnection) url.openConnection();
+		connect.setRequestMethod("POST");
+		connect.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+		connect.setDoOutput(true);
+		BufferedReader in = new BufferedReader(new InputStreamReader(connect.getInputStream()));
+		String inputLine;
+		String response = "";
+		while ((inputLine = in.readLine()) != null) {
+			response += inputLine;
+		}
+		in.close();
+		System.out.println(response.toString());
+		
+		JSONParser jsonParser = new JSONParser();
+		JSONObject jsonAccessToken=null;
+		try {
+			jsonAccessToken = (JSONObject) jsonParser.parse(response);
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		String access_token = (String)jsonAccessToken.get("access_token");
+		System.out.println("Access token =" + access_token);
+		System.out.println("access token caught");
+		
+		URL obj1 = new URL("https://www.googleapis.com/oauth2/v3/userinfo?access_token=" + access_token);
+		HttpURLConnection conn = (HttpURLConnection) obj1.openConnection();
+		BufferedReader in1 = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+		String inputLine1;
+		String responsee = "";
+		while ((inputLine1 = in1.readLine()) != null) {
+			responsee += inputLine1;
+		}
+		in1.close();
+		System.out.println(responsee.toString());
+		JSONObject json_user_details = null;
+		try {
+			json_user_details = (JSONObject) jsonParser.parse(responsee);
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		userMail1=(String)json_user_details.get("email");
+		userName1=(String)json_user_details.get("name");
+		
+		System.out.println(userMail1);
+		System.out.println(userName1);
+		
+		userDetails = new UserDetails();
+		userData = data(userMail1);
+		System.out.println("UserData: "+userData);
+		if(userData.contains(userMail1))
+		{
+			HttpSession session = req.getSession();
+			session.setAttribute("name", userName1);
+			session.setAttribute("mail", userMail1);
+			return "update";
+		}
+		else
+		{
+			return "redirect:/";
+		}
 	}
 	
 	@RequestMapping(value="/settings")
 	public ModelAndView settings(HttpServletRequest request,HttpServletResponse response)
 	{
-		return new ModelAndView("settings.jsp?name="+userName+"&mail="+userMail);
+		return new ModelAndView("settings.jsp?name="+userName1+"&mail="+userMail1);
 	}
 	
 }
