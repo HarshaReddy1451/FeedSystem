@@ -13,6 +13,9 @@
 	{
 		$("#searchResultsList").hide();
 		$("#settingsDiv").hide();
+		$("#search").focusout(function(){
+			$("#searchResultsList").hide();
+		});
 		$.ajax({
 			url :'/getUsers',
 			datatype:'json',

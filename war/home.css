@@ -228,3 +228,11 @@ p
 {
 	color: red;
 }
+#searchResultsList
+{
+	background-color: white;
+	float:right;
+	overflow: scroll;
+	overflow-x: hidden;
+	height:170px;
+}
