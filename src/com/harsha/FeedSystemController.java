@@ -26,19 +26,23 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.KeyFactory;
+import com.google.appengine.api.datastore.Transaction;
+import com.google.cloud.sql.jdbc.internal.DataTypeConverter;
 import com.google.gson.Gson;
 
 @Controller
 public class FeedSystemController {
 
-	PersistenceManager pm = PMF.get().getPersistenceManager();
-	List<String> userData, feedData, userMailId;
+	List<String> userData;
 	UserDetails userDetails;
 	String userMail,userName,picture;
 	String userMail1,userName1;
 
 	@RequestMapping("/")
 	public String home() {
+		System.out.println("Home page....");
 		return "index";
 	}
 
@@ -55,6 +59,7 @@ public class FeedSystemController {
 	@SuppressWarnings("unchecked")
 	@RequestMapping(value = "/getUsers", method = RequestMethod.GET)
 	public void getUsers(HttpServletResponse response) throws IOException {
+		PersistenceManager pm = PMF.get().getPersistenceManager();
 		String queryStr = "select FROM " + UserDetails.class.getName() + " ORDER BY signUpUserName ASC";
 		Query q = pm.newQuery(queryStr);
 		try {
@@ -108,23 +113,39 @@ public class FeedSystemController {
 		System.out.println("Complete UserName:" + completeUserName);
 		long millis = System.currentTimeMillis();
 		UpdateFeed updateFeed = new UpdateFeed();
-		if (!feedText.equals("")) {
+		if (!feedText.equals("") && completeUserName.length()>1 ) {
 			updateFeed.setFeed(feedText);
 			updateFeed.setUserMail(userMail);
 			updateFeed.setDate(millis);
 			updateFeed.setUserName(completeUserName);
-			System.out.println("userMail:" + updateFeed.getUserMail());
-			pm.makePersistent(updateFeed);
-			String userNameToDisplay = new Gson().toJson(completeUserName);
-			System.out.println("UserNameTDisplay:" + userNameToDisplay);
-			String feedToDisplay = new Gson().toJson(feedText);
-			System.out.println("Feed To display:" + feedToDisplay);
-			String dateToDisplay = new Gson().toJson(millis);
-			String jsonObjects = "[" + userNameToDisplay + "," + feedToDisplay + "," + dateToDisplay + "]";// creating
-																											// json
-																											// array
-			response.getWriter().write(jsonObjects); // sending response as json
 		}
+		else
+		{
+			updateFeed.setFeed(feedText);
+			updateFeed.setUserMail(userMail);
+			updateFeed.setDate(millis);
+			updateFeed.setUserName("Test");
+		}
+		System.out.println("userMail:" + updateFeed.getUserMail());
+		PersistenceManager pm = PMF.get().getPersistenceManager();
+		pm.makePersistent(updateFeed);
+		String userNameToDisplay = new Gson().toJson(completeUserName);
+		System.out.println("UserNameToDisplay:" + userNameToDisplay);
+		String feedToDisplay = new Gson().toJson(feedText);
+		System.out.println("Feed To display:" + feedToDisplay);
+		String dateToDisplay = new Gson().toJson(millis);
+		String userMailToDisplay = new Gson().toJson(userMail);
+		String jsonObjects = null;
+		System.out.println("Is empty: "+completeUserName.length());
+		if (completeUserName.length()>1) {
+			System.out.println("IF");
+			jsonObjects = "[" + userNameToDisplay + "," + feedToDisplay + "," + dateToDisplay + "]";
+		} 
+		else {
+			System.out.println("ELSE");
+			jsonObjects = "[" + userMailToDisplay + "," + feedToDisplay + "," + dateToDisplay + "]";
+		}
+		response.getWriter().write(jsonObjects);
 		return null;
 	}
 
@@ -159,6 +180,7 @@ public class FeedSystemController {
 			userDetails.setDate(millis = System.currentTimeMillis());
 			List<String> userData = data(userDetails.getSignUpEmail());
 			System.out.println(userData);
+			PersistenceManager pm = PMF.get().getPersistenceManager();
 			if (!userData.contains(signUpEmail)) {
 				try {
 					pm.makePersistent(userDetails);
@@ -184,12 +206,16 @@ public class FeedSystemController {
 
 	@SuppressWarnings({ "unchecked", "null" })
 	public List<String> data(String userMail) {
+		System.out.println("UserMail To retrieve: "+userMail);
+		System.out.println("Data retrieval");
+		PersistenceManager pm = PMF.get().getPersistenceManager();
 		Query q = pm.newQuery("select from " + UserDetails.class.getName() + " where signUpEmail == signUpEmailParam "
 				+ "parameters String signUpEmailParam " + "order by date desc");
 		try {
 			List<UserDetails> results = null;
 			userData = new ArrayList<String>();
 			results = (List<UserDetails>) q.execute(userMail);
+			System.out.println("Results: "+results);
 			if (!results.isEmpty() && !(results == null)) {
 				for (UserDetails data : results) {
 					userData.add(data.getSignUpUserName());
@@ -205,12 +231,14 @@ public class FeedSystemController {
 		} finally {
 			q.closeAll();
 		}
+		System.out.println("UserData returing is: "+userData);
 		return userData;
 	}
 
 	@SuppressWarnings("unchecked")
 	@RequestMapping(value = "/fetchUpdates")
 	public void fetchUpdates(HttpServletResponse response) throws IOException {
+		PersistenceManager pm = PMF.get().getPersistenceManager();
 		Query q = pm.newQuery("select from " + UpdateFeed.class.getName() + " order by date desc");
 		List<UpdateFeed> feeds = null;
 		try {
@@ -232,7 +260,7 @@ public class FeedSystemController {
 	}
 	
 	@RequestMapping(value="/get_auth_code")
-	public String get_code(@RequestParam String code, HttpServletRequest req,
+	public ModelAndView get_code(@RequestParam String code, HttpServletRequest req,
 			HttpServletResponse resp) throws IOException
 	{
 		
@@ -298,7 +326,9 @@ public class FeedSystemController {
 		
 		if(userMail==null || userName==null)
 		{
-			return "redirect:/";
+			HttpSession session=req.getSession();
+			session.setAttribute("name",userName);
+			return new ModelAndView("index");
 		}
 		
 		String CHAR_LIST ="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
@@ -309,13 +339,15 @@ public class FeedSystemController {
             char ch = CHAR_LIST.charAt(number);
             randStr.append(ch);
         }
+        byte[] encodedPwdBytes=randStr.toString().getBytes("UTF-8");
+        String encPwd=DatatypeConverter.printBase64Binary(encodedPwdBytes);
 		
-        if(!userMail.isEmpty() && !userName.isEmpty() && !(userMail=="") && !(userName==""))
+        if(userName.isEmpty() || (userName==""))
 		{
         	userDetails = new UserDetails();
 			userDetails.setSignUpEmail(userMail);
-			userDetails.setSignUpUserName(userName);
-			userDetails.setSignUpPassword(randStr.toString());
+			userDetails.setSignUpUserName("Test");
+			userDetails.setSignUpPassword(encPwd);
 			userDetails.setIsDelete(false);
 			userDetails.setSource("google");
 			userDetails.setProfilePic(picture);
@@ -323,6 +355,7 @@ public class FeedSystemController {
 			userDetails.setDate(millis = System.currentTimeMillis());
 			userData = data(userDetails.getSignUpEmail());
 			System.out.println("UserData: "+userData);
+			PersistenceManager pm = PMF.get().getPersistenceManager();
 			if(!userData.contains(userMail))
 			{
 				try
@@ -332,11 +365,43 @@ public class FeedSystemController {
 				finally{					
 				}
 			}
+			else
+			{
+				return new ModelAndView("index");
+			}
 		}
+        else
+        {
+        	userDetails = new UserDetails();
+			userDetails.setSignUpEmail(userMail);
+			userDetails.setSignUpUserName(userName);
+			userDetails.setSignUpPassword(encPwd);
+			userDetails.setIsDelete(false);
+			userDetails.setSource("google");
+			userDetails.setProfilePic(picture);
+			long millis;
+			userDetails.setDate(millis = System.currentTimeMillis());
+			userData = data(userDetails.getSignUpEmail());
+			System.out.println("UserData: "+userData);
+			PersistenceManager pm = PMF.get().getPersistenceManager();
+			if(!userData.contains(userMail))
+			{
+				try
+				{
+					pm.makePersistent(userDetails);
+				}
+				finally{					
+				}
+			}
+			else
+			{
+				return new ModelAndView("index");
+			}
+        }
 		HttpSession session = req.getSession();
 		session.setAttribute("name", userName);
 		session.setAttribute("mail", userMail);
-		return "update";
+		return new ModelAndView("update");
 	}
 	
 	@RequestMapping("/loginWithGoogle")
@@ -346,7 +411,7 @@ public class FeedSystemController {
 	}
 	
 	@RequestMapping(value="/get_code")
-	public String get_code1(@RequestParam String code, HttpServletRequest req,
+	public ModelAndView get_code1(@RequestParam String code, HttpServletRequest req,
 			HttpServletResponse resp) throws IOException
 	{
 		
@@ -412,23 +477,83 @@ public class FeedSystemController {
 		userDetails = new UserDetails();
 		userData = data(userMail1);
 		System.out.println("UserData: "+userData);
-		if(userData.contains(userMail1))
+		
+		if(userMail1==null || userName1==null)
+		{
+			System.out.println("Entered If");
+			HttpSession session=req.getSession();
+			session.setAttribute("name",userName1);
+			return new ModelAndView("index");
+		}
+		else if(userData.contains(userMail1))
 		{
 			HttpSession session = req.getSession();
 			session.setAttribute("name", userName1);
 			session.setAttribute("mail", userMail1);
-			return "update";
+			return new ModelAndView("update");
 		}
 		else
 		{
-			return "redirect:/";
+			return new ModelAndView("index");
 		}
 	}
 	
+	@SuppressWarnings("unchecked")
 	@RequestMapping(value="/settings")
-	public ModelAndView settings(HttpServletRequest request,HttpServletResponse response)
+	public void settings(HttpServletRequest request,HttpServletResponse response) throws IOException
 	{
-		return new ModelAndView("settings.jsp?name="+userName1+"&mail="+userMail1);
+		String userMailToUpdate=request.getParameter("userMail");
+		System.out.println("usermail-to-display: "+userMailToUpdate.length());
+		PersistenceManager pm = PMF.get().getPersistenceManager();
+		Query q = pm.newQuery("select from " + UserDetails.class.getName() + " where signUpEmail == signUpEmailParam "
+				+ "parameters String signUpEmailParam " + "order by date desc");
+		try {
+			List<UserDetails> results = null;
+			results = (List<UserDetails>) q.execute(userMailToUpdate);
+			System.out.println("Results: "+results);
+			if (!results.isEmpty() && !(results == null)) {
+				response.getWriter().write(new Gson().toJson(results));
+			}
+		} finally {
+			q.closeAll();
+		}
 	}
 	
+	@SuppressWarnings("unchecked")
+	@RequestMapping(value="/updateUserDetails",method=RequestMethod.POST)
+	public void updateUserDetails(HttpServletRequest request,HttpServletResponse response) throws IOException
+	{
+		String nameToUpdate=request.getParameter("name");
+		String mailToUpdate=request.getParameter("mail");
+		String passwordToUpdate=request.getParameter("newPwd");
+		byte[] pwdToEnc = passwordToUpdate.getBytes("UTF-8");
+		String encryptedPwd = DatatypeConverter.printBase64Binary(pwdToEnc);
+		System.out.println("name to update: "+nameToUpdate);
+		System.out.println("mail to update: "+mailToUpdate);
+		System.out.println("passwd to update: "+passwordToUpdate);
+		
+		UserDetails objUserDetails = new UserDetails();
+		List<UserDetails> userList = new ArrayList<UserDetails>();
+		PersistenceManager pm = PMF.get().getPersistenceManager();
+		try {
+			String query = "select FROM " + UserDetails.class.getName() + " where signUpEmail == '" + mailToUpdate
+					+ "'";
+			userList = (List<UserDetails>) pm.newQuery(query).execute();
+			System.out.println(userList);
+			if (!userList.isEmpty()) {
+				objUserDetails = (UserDetails) userList.get(0);
+				System.out.println("username " + objUserDetails.getSignUpUserName());
+				System.out.println("email " + objUserDetails.getSignUpEmail());
+				objUserDetails.setSignUpUserName(nameToUpdate);
+				objUserDetails.setSignUpPassword(encryptedPwd);
+			}
+		}
+		catch(Exception e){
+			e.getMessage();
+		}
+		finally{
+			pm.close();
+		}
+		response.getWriter().write(new Gson().toJson(mailToUpdate));
+	}
 }

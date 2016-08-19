@@ -22,16 +22,13 @@
 					var password=$("#passwordId").val();
 					var confirmPassword=$("#confirmPasswordId").val();
 					var email=$("#emailId").val();
-					
-					var indexAt=email.indexOf('@');
-					var dot=email.lastIndexOf('.');
-					
-					console.log("index: "+ indexAt );
+					var emailRegex=/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+					pwdRegex=/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/;
 					console.log(userName);
 					console.log(password);
 					console.log(confirmPassword);
 					console.log(email);
-					if(userName!="" && password!="" && email!="")
+					if(userName!="" && password!="" && email!="" && emailRegex.test(email) && pwdRegex.test(password))
 					{
 						$.ajax({
 							url : '/signup',
@@ -47,7 +44,8 @@
 										$("#myModal1").modal();
 										$("#userNameId").focus();
 										$("#signUpFooter").hide();
-										$("#signUpFooter").append("<p><strong>User Already Exists.</strong></p>");
+										$("#signUpFooter").html("<p><strong>User Already Exists.</strong></p>");
+										$("#signUpFooter").show();
 									}	
 									else if(data.trim() === "false")
 									{
@@ -74,12 +72,8 @@
 					var password=$("#loginPasswordId").val();
 					console.log(email);
 					console.log(password);
-					
-					var indexAt=email.indexOf('@');
-					var dot=email.lastIndexOf('.');
-					console.log("index: "+ indexAt);
-					console.log("dotIndex: "+dot);
-					if(email!="" && password!="" && indexAt>1 && dot> indexAt+2 && dot+2 < email.length)
+					var emailRegex=/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+					if(email!=""   && emailRegex.test(email) && password!="")
 					{
 						$.ajax({
 							url : '/login',
