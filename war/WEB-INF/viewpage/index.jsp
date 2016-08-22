@@ -93,9 +93,16 @@
 											$("#myModal1").modal();
 										});
 									}
-									else if(data.trim() === "false")
+									else
 									{
-										window.location.href = "/update";
+										window.location.href="/update";
+										/* var form = $('<form></form>');
+										  $(form).hide().attr('method','post').attr('action','/update');
+										  var input1 = $('<input type="hidden" />').attr('name','name').val(data[0]);
+										  var input2 = $('<input type="hidden" />').attr('name','mail').val(data[1]);
+										  $(form).append(input1);
+										  $(form).append(input2);
+										  $(form).appendTo('body').submit(); */
 									}
 								}
 				            }

@@ -8,10 +8,17 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.Random;
 
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -26,19 +33,12 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
-import com.google.appengine.api.datastore.Key;
-import com.google.appengine.api.datastore.KeyFactory;
-import com.google.appengine.api.datastore.Transaction;
-import com.google.cloud.sql.jdbc.internal.DataTypeConverter;
 import com.google.gson.Gson;
 
 @Controller
 public class FeedSystemController {
 
 	List<String> userData;
-	UserDetails userDetails;
-	String userMail,userName,picture;
-	String userMail1,userName1;
 
 	@RequestMapping("/")
 	public String home() {
@@ -50,10 +50,14 @@ public class FeedSystemController {
 	public ModelAndView updates(HttpServletResponse response, HttpServletRequest request) throws IOException {
 		HttpSession session = request.getSession();
 		System.out.println("Username to display:" + userData.get(0));
+		/*
+		 * String userName=request.getParameter("name"); String
+		 * userMail=request.getParameter("mail");
+		 */
 		session.setAttribute("name", userData.get(0));
 		session.setAttribute("mail", userData.get(1));
 		System.out.println(userData);
-		return new ModelAndView("update", "userName", userData.get(0));
+		return new ModelAndView("update");
 	}
 
 	@SuppressWarnings("unchecked")
@@ -70,12 +74,14 @@ public class FeedSystemController {
 				response.getWriter().write(new Gson().toJson(results));
 			}
 		} finally {
+			pm.close();
 			q.closeAll();
 		}
 	}
 
 	@RequestMapping(value = "/signupData", method = RequestMethod.GET)
 	public ModelAndView signUpData() {
+		UserDetails userDetails = new UserDetails();
 		System.out.println(userDetails.getSignUpUserName());
 		return new ModelAndView("signup", "name", userDetails.getSignUpUserName());
 	}
@@ -100,7 +106,6 @@ public class FeedSystemController {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	@RequestMapping(value = "/updateservlet", method = RequestMethod.POST)
 	public ModelAndView update(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
@@ -113,14 +118,12 @@ public class FeedSystemController {
 		System.out.println("Complete UserName:" + completeUserName);
 		long millis = System.currentTimeMillis();
 		UpdateFeed updateFeed = new UpdateFeed();
-		if (!feedText.equals("") && completeUserName.length()>1 ) {
+		if (!feedText.equals("") && completeUserName.length() > 1) {
 			updateFeed.setFeed(feedText);
 			updateFeed.setUserMail(userMail);
 			updateFeed.setDate(millis);
 			updateFeed.setUserName(completeUserName);
-		}
-		else
-		{
+		} else {
 			updateFeed.setFeed(feedText);
 			updateFeed.setUserMail(userMail);
 			updateFeed.setDate(millis);
@@ -136,16 +139,16 @@ public class FeedSystemController {
 		String dateToDisplay = new Gson().toJson(millis);
 		String userMailToDisplay = new Gson().toJson(userMail);
 		String jsonObjects = null;
-		System.out.println("Is empty: "+completeUserName.length());
-		if (completeUserName.length()>1) {
+		System.out.println("Is empty: " + completeUserName.length());
+		if (completeUserName.length() > 1) {
 			System.out.println("IF");
 			jsonObjects = "[" + userNameToDisplay + "," + feedToDisplay + "," + dateToDisplay + "]";
-		} 
-		else {
+		} else {
 			System.out.println("ELSE");
 			jsonObjects = "[" + userMailToDisplay + "," + feedToDisplay + "," + dateToDisplay + "]";
 		}
 		response.getWriter().write(jsonObjects);
+		pm.close();
 		return null;
 	}
 
@@ -167,7 +170,7 @@ public class FeedSystemController {
 		int index = signUpEmail.indexOf("@");
 		int dot = signUpEmail.lastIndexOf(".");
 
-		userDetails = new UserDetails();
+		UserDetails userDetails = new UserDetails();
 		if (!signUpUserName.equals("") && !signUpPassword.equals("") && (signUpPassword.length() >= 6)
 				&& signUpConfirmPassword.equals(signUpPassword) && index > 1 && dot > index + 2
 				&& dot + 2 < signUpEmail.length()) {
@@ -185,12 +188,13 @@ public class FeedSystemController {
 				try {
 					pm.makePersistent(userDetails);
 				} finally {
-					// pm.close();
+					pm.close();
 				}
 				response.getWriter().write(new Gson().toJson("false"));
 			} else {
 				response.getWriter().write(new Gson().toJson(signUpEmail));
 			}
+			pm.close();
 		} else {
 			response.getWriter().write(new Gson().toJson(signUpEmail));
 		}
@@ -206,7 +210,7 @@ public class FeedSystemController {
 
 	@SuppressWarnings({ "unchecked", "null" })
 	public List<String> data(String userMail) {
-		System.out.println("UserMail To retrieve: "+userMail);
+		System.out.println("UserMail To retrieve: " + userMail);
 		System.out.println("Data retrieval");
 		PersistenceManager pm = PMF.get().getPersistenceManager();
 		Query q = pm.newQuery("select from " + UserDetails.class.getName() + " where signUpEmail == signUpEmailParam "
@@ -215,7 +219,7 @@ public class FeedSystemController {
 			List<UserDetails> results = null;
 			userData = new ArrayList<String>();
 			results = (List<UserDetails>) q.execute(userMail);
-			System.out.println("Results: "+results);
+			System.out.println("Results: " + results);
 			if (!results.isEmpty() && !(results == null)) {
 				for (UserDetails data : results) {
 					userData.add(data.getSignUpUserName());
@@ -229,9 +233,10 @@ public class FeedSystemController {
 				}
 			}
 		} finally {
+			pm.close();
 			q.closeAll();
 		}
-		System.out.println("UserData returing is: "+userData);
+		System.out.println("UserData returing is: " + userData);
 		return userData;
 	}
 
@@ -249,28 +254,28 @@ public class FeedSystemController {
 				response.getWriter().write(new Gson().toJson(feeds));
 			}
 		} finally {
+			pm.close();
 			q.closeAll();
 		}
 	}
-	
+
 	@RequestMapping("/goWithGoogle")
-	public ModelAndView signUpWithGoogle()
-	{
-		return new ModelAndView("redirect:https://accounts.google.com/o/oauth2/auth?redirect_uri=http://feedsys.appspot.com/get_auth_code&response_type=code&client_id=187391095236-ikc9rlbs4ldqta29d1ejuf2756qba77s.apps.googleusercontent.com&approval_prompt=force&scope=email&access_type=online");
+	public ModelAndView signUpWithGoogle() {
+		return new ModelAndView(
+				"redirect:https://accounts.google.com/o/oauth2/auth?redirect_uri=http://feedsys.appspot.com/get_auth_code&response_type=code&client_id=187391095236-ikc9rlbs4ldqta29d1ejuf2756qba77s.apps.googleusercontent.com&approval_prompt=force&scope=email&access_type=online");
 	}
-	
-	@RequestMapping(value="/get_auth_code")
-	public ModelAndView get_code(@RequestParam String code, HttpServletRequest req,
-			HttpServletResponse resp) throws IOException
-	{
-		
+
+	@RequestMapping(value = "/get_auth_code")
+	public ModelAndView get_code(@RequestParam String code, HttpServletRequest req, HttpServletResponse resp)
+			throws IOException {
+
 		// code for getting authorization_code
 		System.out.println("Getting Authorization.");
 		String auth_code = code;
 		System.out.println(auth_code);
-		
-		//code for getting access token
-		
+
+		// code for getting access token
+
 		URL url = new URL("https://www.googleapis.com/oauth2/v3/token?"
 				+ "client_id=187391095236-ikc9rlbs4ldqta29d1ejuf2756qba77s.apps.googleusercontent.com"
 				+ "&client_secret=htzLprFZYXa2RNT4qxTvZ4cp&" + "redirect_uri=http://feedsys.appspot.com/get_auth_code&"
@@ -287,19 +292,19 @@ public class FeedSystemController {
 		}
 		in.close();
 		System.out.println(response.toString());
-		
+
 		JSONParser jsonParser = new JSONParser();
-		JSONObject jsonAccessToken=null;
+		JSONObject jsonAccessToken = null;
 		try {
 			jsonAccessToken = (JSONObject) jsonParser.parse(response);
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		String access_token = (String)jsonAccessToken.get("access_token");
+		String access_token = (String) jsonAccessToken.get("access_token");
 		System.out.println("Access token =" + access_token);
 		System.out.println("access token caught");
-		
+
 		URL obj1 = new URL("https://www.googleapis.com/oauth2/v3/userinfo?access_token=" + access_token);
 		HttpURLConnection conn = (HttpURLConnection) obj1.openConnection();
 		BufferedReader in1 = new BufferedReader(new InputStreamReader(conn.getInputStream()));
@@ -317,34 +322,32 @@ public class FeedSystemController {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		userMail=(String)json_user_details.get("email");
-		userName=(String)json_user_details.get("name");
-		picture=(String)json_user_details.get("picture");
-		
+		String userMail = (String) json_user_details.get("email");
+		String userName = (String) json_user_details.get("name");
+		String picture = (String) json_user_details.get("picture");
+
 		System.out.println(userMail);
 		System.out.println(userName);
-		
-		if(userMail==null || userName==null)
-		{
-			HttpSession session=req.getSession();
-			session.setAttribute("name",userName);
+
+		if (userMail == null || userName == null) {
+			HttpSession session = req.getSession();
+			session.setAttribute("name", userName);
 			return new ModelAndView("index");
 		}
-		
-		String CHAR_LIST ="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+
+		String CHAR_LIST = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
 		int RANDOM_STRING_LENGTH = 6;
 		StringBuffer randStr = new StringBuffer();
-        for(int i=0; i<RANDOM_STRING_LENGTH; i++){
-            int number = new Random().nextInt(CHAR_LIST.length());
-            char ch = CHAR_LIST.charAt(number);
-            randStr.append(ch);
-        }
-        byte[] encodedPwdBytes=randStr.toString().getBytes("UTF-8");
-        String encPwd=DatatypeConverter.printBase64Binary(encodedPwdBytes);
-		
-        if(userName.isEmpty() || (userName==""))
-		{
-        	userDetails = new UserDetails();
+		for (int i = 0; i < RANDOM_STRING_LENGTH; i++) {
+			int number = new Random().nextInt(CHAR_LIST.length());
+			char ch = CHAR_LIST.charAt(number);
+			randStr.append(ch);
+		}
+		byte[] encodedPwdBytes = randStr.toString().getBytes("UTF-8");
+		String encPwd = DatatypeConverter.printBase64Binary(encodedPwdBytes);
+
+		if (userName.isEmpty() || (userName == "")) {
+			UserDetails userDetails = new UserDetails();
 			userDetails.setSignUpEmail(userMail);
 			userDetails.setSignUpUserName("Test");
 			userDetails.setSignUpPassword(encPwd);
@@ -354,25 +357,19 @@ public class FeedSystemController {
 			long millis;
 			userDetails.setDate(millis = System.currentTimeMillis());
 			userData = data(userDetails.getSignUpEmail());
-			System.out.println("UserData: "+userData);
+			System.out.println("UserData: " + userData);
 			PersistenceManager pm = PMF.get().getPersistenceManager();
-			if(!userData.contains(userMail))
-			{
-				try
-				{
+			if (!userData.contains(userMail)) {
+				try {
 					pm.makePersistent(userDetails);
+				} finally {
+					pm.close();
 				}
-				finally{					
-				}
-			}
-			else
-			{
+			} else {
 				return new ModelAndView("index");
 			}
-		}
-        else
-        {
-        	userDetails = new UserDetails();
+		} else {
+			UserDetails userDetails = new UserDetails();
 			userDetails.setSignUpEmail(userMail);
 			userDetails.setSignUpUserName(userName);
 			userDetails.setSignUpPassword(encPwd);
@@ -382,46 +379,63 @@ public class FeedSystemController {
 			long millis;
 			userDetails.setDate(millis = System.currentTimeMillis());
 			userData = data(userDetails.getSignUpEmail());
-			System.out.println("UserData: "+userData);
+			System.out.println("UserData: " + userData);
 			PersistenceManager pm = PMF.get().getPersistenceManager();
-			if(!userData.contains(userMail))
-			{
-				try
-				{
+			if (!userData.contains(userMail)) {
+				try {
 					pm.makePersistent(userDetails);
+				} finally {
+					pm.close();
 				}
-				finally{					
-				}
-			}
-			else
-			{
+			} else {
 				return new ModelAndView("index");
 			}
-        }
+		}
 		HttpSession session = req.getSession();
+		sendMailToUser(userMail);
 		session.setAttribute("name", userName);
 		session.setAttribute("mail", userMail);
 		return new ModelAndView("update");
 	}
-	
-	@RequestMapping("/loginWithGoogle")
-	public ModelAndView loginWithGoogle()
-	{
-		return new ModelAndView("redirect:https://accounts.google.com/o/oauth2/auth?redirect_uri=http://feedsys.appspot.com/get_code&response_type=code&client_id=187391095236-ikc9rlbs4ldqta29d1ejuf2756qba77s.apps.googleusercontent.com&approval_prompt=force&scope=email&access_type=online");
-	}
-	
-	@RequestMapping(value="/get_code")
-	public ModelAndView get_code1(@RequestParam String code, HttpServletRequest req,
-			HttpServletResponse resp) throws IOException
-	{
+
+	private void sendMailToUser(String userMail) {
+		// TODO Auto-generated method stub
+		String subject = "Registration successfull.";
+		String msgBody = "Hi,"+"\n"+"You are registered to FeedSystem with "+userMail;
+		Properties propertiesobj = new Properties();
+		Session session = Session.getDefaultInstance(propertiesobj,null);
+		try {
+			MimeMessage msg = new MimeMessage(session);
+			msg.setFrom(new InternetAddress("harsha.vardhan@a-cti.com", "Admin"));
+			msg.addRecipient(Message.RecipientType.TO, new InternetAddress(userMail));
+			msg.setSubject(subject);
+			msg.setText(msgBody);
+			Transport.send(msg);
+		} catch (IOException e) {
+			System.out.println(e);
+		} catch (MessagingException e) {
+			System.out.println(e);
+		}
 		
+	}
+
+	@RequestMapping("/loginWithGoogle")
+	public ModelAndView loginWithGoogle() {
+		return new ModelAndView(
+				"redirect:https://accounts.google.com/o/oauth2/auth?redirect_uri=http://feedsys.appspot.com/get_code&response_type=code&client_id=187391095236-ikc9rlbs4ldqta29d1ejuf2756qba77s.apps.googleusercontent.com&approval_prompt=force&scope=email&access_type=online");
+	}
+
+	@RequestMapping(value = "/get_code")
+	public ModelAndView get_code1(@RequestParam String code, HttpServletRequest req, HttpServletResponse resp)
+			throws IOException {
+
 		// code for getting authorization_code
 		System.out.println("Getting Authorization.");
 		String auth_code = code;
 		System.out.println(auth_code);
-		
-		//code for getting access token
-		
+
+		// code for getting access token
+
 		URL url = new URL("https://www.googleapis.com/oauth2/v3/token?"
 				+ "client_id=187391095236-ikc9rlbs4ldqta29d1ejuf2756qba77s.apps.googleusercontent.com"
 				+ "&client_secret=htzLprFZYXa2RNT4qxTvZ4cp&" + "redirect_uri=http://feedsys.appspot.com/get_code&"
@@ -438,19 +452,19 @@ public class FeedSystemController {
 		}
 		in.close();
 		System.out.println(response.toString());
-		
+
 		JSONParser jsonParser = new JSONParser();
-		JSONObject jsonAccessToken=null;
+		JSONObject jsonAccessToken = null;
 		try {
 			jsonAccessToken = (JSONObject) jsonParser.parse(response);
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		String access_token = (String)jsonAccessToken.get("access_token");
+		String access_token = (String) jsonAccessToken.get("access_token");
 		System.out.println("Access token =" + access_token);
 		System.out.println("access token caught");
-		
+
 		URL obj1 = new URL("https://www.googleapis.com/oauth2/v3/userinfo?access_token=" + access_token);
 		HttpURLConnection conn = (HttpURLConnection) obj1.openConnection();
 		BufferedReader in1 = new BufferedReader(new InputStreamReader(conn.getInputStream()));
@@ -468,70 +482,115 @@ public class FeedSystemController {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		userMail1=(String)json_user_details.get("email");
-		userName1=(String)json_user_details.get("name");
-		
+		String userMail1 = (String) json_user_details.get("email");
+		String userName1 = (String) json_user_details.get("name");
+
 		System.out.println(userMail1);
 		System.out.println(userName1);
-		
-		userDetails = new UserDetails();
+
 		userData = data(userMail1);
-		System.out.println("UserData: "+userData);
-		
-		if(userMail1==null || userName1==null)
-		{
+		System.out.println("UserData: " + userData);
+
+		if (userMail1 == null || userName1 == null) {
 			System.out.println("Entered If");
-			HttpSession session=req.getSession();
-			session.setAttribute("name",userName1);
+			HttpSession session = req.getSession();
+			session.setAttribute("name", userName1);
 			return new ModelAndView("index");
-		}
-		else if(userData.contains(userMail1))
-		{
+		} else if (userData.contains(userMail1)) {
 			HttpSession session = req.getSession();
 			session.setAttribute("name", userName1);
 			session.setAttribute("mail", userMail1);
 			return new ModelAndView("update");
-		}
-		else
-		{
+		} else {
 			return new ModelAndView("index");
 		}
 	}
-	
+
 	@SuppressWarnings("unchecked")
-	@RequestMapping(value="/settings")
-	public void settings(HttpServletRequest request,HttpServletResponse response) throws IOException
-	{
-		String userMailToUpdate=request.getParameter("userMail");
-		System.out.println("usermail-to-display: "+userMailToUpdate.length());
+	@RequestMapping(value = "/settings")
+	public void settings(HttpServletRequest request, HttpServletResponse response) throws IOException {
+		String userMailToUpdate = request.getParameter("userMail");
+		System.out.println("usermail-to-display: " + userMailToUpdate.length());
 		PersistenceManager pm = PMF.get().getPersistenceManager();
 		Query q = pm.newQuery("select from " + UserDetails.class.getName() + " where signUpEmail == signUpEmailParam "
 				+ "parameters String signUpEmailParam " + "order by date desc");
 		try {
 			List<UserDetails> results = null;
 			results = (List<UserDetails>) q.execute(userMailToUpdate);
-			System.out.println("Results: "+results);
+			System.out.println("Results: " + results);
 			if (!results.isEmpty() && !(results == null)) {
 				response.getWriter().write(new Gson().toJson(results));
 			}
 		} finally {
+			pm.close();
 			q.closeAll();
 		}
 	}
-	
+
 	@SuppressWarnings("unchecked")
-	@RequestMapping(value="/updateUserDetails",method=RequestMethod.POST)
-	public void updateUserDetails(HttpServletRequest request,HttpServletResponse response) throws IOException
-	{
-		String nameToUpdate=request.getParameter("name");
-		String mailToUpdate=request.getParameter("mail");
-		String passwordToUpdate=request.getParameter("newPwd");
+	@RequestMapping(value = "/changePassword", method = RequestMethod.POST)
+	public void changePassword(HttpServletRequest request, HttpServletResponse response) throws IOException {
+		String nameToUpdate = request.getParameter("name");
+		String mailToUpdate = request.getParameter("mail");
+		String passwordToUpdate = request.getParameter("newPwd");
 		byte[] pwdToEnc = passwordToUpdate.getBytes("UTF-8");
 		String encryptedPwd = DatatypeConverter.printBase64Binary(pwdToEnc);
-		System.out.println("name to update: "+nameToUpdate);
-		System.out.println("mail to update: "+mailToUpdate);
-		System.out.println("passwd to update: "+passwordToUpdate);
-		
+		System.out.println("name to update: " + nameToUpdate);
+		System.out.println("mail to update: " + mailToUpdate);
+		System.out.println("passwd to update: " + passwordToUpdate);
+
+		UserDetails objUserDetails = new UserDetails();
+		List<UserDetails> userList = new ArrayList<UserDetails>();
+		PersistenceManager pm = PMF.get().getPersistenceManager();
+		try {
+			String query = "select FROM " + UserDetails.class.getName() + " where signUpEmail == '" + mailToUpdate
+					+ "'";
+			userList = (List<UserDetails>) pm.newQuery(query).execute();
+			System.out.println(userList);
+			if (!userList.isEmpty()) {
+				objUserDetails = (UserDetails) userList.get(0);
+				System.out.println("username " + objUserDetails.getSignUpUserName());
+				System.out.println("email " + objUserDetails.getSignUpEmail());
+				/*objUserDetails.setSignUpUserName(nameToUpdate);*/
+				objUserDetails.setSignUpPassword(encryptedPwd);
+				sendMail(mailToUpdate);
+			}
+		} catch (Exception e) {
+			e.getMessage();
+		} finally {
+			pm.close();
+		}
+		response.getWriter().write(new Gson().toJson(mailToUpdate));
+	}
+	
+	private void sendMail(String mailToSendMsg) {
+		// TODO Auto-generated method stub
+		String subject = "User Profile Updated";
+		String msgBody = "Hi,"+"\n"+"Your Profile has been Updated.";
+		Properties propertiesobj = new Properties();
+		Session session = Session.getDefaultInstance(propertiesobj,null);
+		try {
+			MimeMessage msg = new MimeMessage(session);
+			msg.setFrom(new InternetAddress("harsha.vardhan@a-cti.com", "Admin"));
+			msg.addRecipient(Message.RecipientType.TO, new InternetAddress(mailToSendMsg));
+			msg.setSubject(subject);
+			msg.setText(msgBody);
+			Transport.send(msg);
+		} catch (IOException e) {
+			System.out.println(e);
+		} catch (MessagingException e) {
+			System.out.println(e);
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	@RequestMapping(value = "/updateUserDetails", method = RequestMethod.POST)
+	public void updateUserDetails(HttpServletRequest request, HttpServletResponse response) throws IOException {
+		String nameToUpdate = request.getParameter("name");
+		String mailToUpdate = request.getParameter("mail");
+		System.out.println("name to update: " + nameToUpdate);
+		System.out.println("mail to update: " + mailToUpdate);
+
 		UserDetails objUserDetails = new UserDetails();
 		List<UserDetails> userList = new ArrayList<UserDetails>();
 		PersistenceManager pm = PMF.get().getPersistenceManager();
@@ -545,13 +604,11 @@ public class FeedSystemController {
 				System.out.println("username " + objUserDetails.getSignUpUserName());
 				System.out.println("email " + objUserDetails.getSignUpEmail());
 				objUserDetails.setSignUpUserName(nameToUpdate);
-				objUserDetails.setSignUpPassword(encryptedPwd);
+				sendMail(mailToUpdate);
 			}
-		}
-		catch(Exception e){
+		} catch (Exception e) {
 			e.getMessage();
-		}
-		finally{
+		} finally {
 			pm.close();
 		}
 		response.getWriter().write(new Gson().toJson(mailToUpdate));

@@ -226,16 +226,21 @@
 								console.log(parsingResponse[i].signUpEmail);
 								username=parsingResponse[i].signUpUserName;
 								email=parsingResponse[i].signUpEmail;
+								picture=parsingResponse[i].profilePicture;
 								userDetails="<table>"
 								+"<tr><td>UserName:</td><td><input type='text' id='name' value="+username+"></td></tr>"
 								+"<tr><td>Email:</td><td><input type='text' id='mail' value="+email+" readonly><td></tr>"
-								+"<tr><td>New Password:</td><td><input type='password' placeholder='alphanumeric' id='newPwd'></td></tr>"
+								+"<tr><td><input type='checkbox' id='checkboxId' onclick='check()'>Change password.<td></tr>"
+								+"<tr id='pwd'><td>New Password:</td><td><input type='password' placeholder='alphanumeric' id='newPwd'></td></tr>"
 								+"<tr><td><span role='alert' class='error-msg' id='errormsg_0_Passwd'>Password didn't match requirement.</span></td></tr>"
-								+"<tr><td>Confirm Password:</td><td><input type='password' id='confirmPwd'></td></tr>"
+								+"<tr id='cpwd'><td>Confirm Password:</td><td><input type='password' id='confirmPwd'></td></tr>"
+								+"<tr><td>Profile Picture:</td><td><img src="+picture+" id='profilePic'><td></tr>"
 								+"<tr><td><button id='save' onclick='saveClicked()'>Save</button></td></tr>"
 								+"</table>";
 							}
 							$("#settingsDiv").html(userDetails);
+							$("#pwd").hide();
+							$("#cpwd").hide();
 							$(".error-msg").hide();
 							$("#settingsDiv").show();
 						}
@@ -245,7 +250,7 @@
 		});
 	});
 </script>
-<script>
+<script>	
 	function saveClicked() {
 		var name = $("#name").val();
 		var mail = $("#mail").val();
@@ -258,11 +263,30 @@
 		console.log(newPwd);
 		console.log(confirmPwd);
 		console.log(pwdRegex.test(newPwd));
-		if(name!=null && name!="" && pwdRegex.test(newPwd) && newPwd!=null && newPwd!="" && newPwd===confirmPwd)
+		if(newPwd==null || newPwd=="" || confirmPwd=="" || confirmPwd==null)
+		{
+			if(name!=null && name!="")
+			{
+				$(".error-msg").hide();
+				$.ajax({
+					url:"/updateUserDetails",
+					type:'post',
+					dataType:"json",
+					data:{name,mail},
+					success:function(userData){
+						if(userData!=null)
+						{
+							$("#settingsDiv").hide();
+						}
+					}
+				});
+			}
+		}
+		else if(name!=null && name!="" && pwdRegex.test(newPwd) && newPwd!=null && newPwd!="" && newPwd===confirmPwd)
 		{
 			$(".error-msg").hide();
 			$.ajax({
-				url:"/updateUserDetails",
+				url:"/changePassword",
 				type:'post',
 				dataType:"json",
 				data:{name,mail,newPwd},
@@ -280,6 +304,21 @@
 		{
 			$(".error-msg").show();
 		}
+	}
+</script>
+<script>
+	function check(){
+		if($("#checkboxId").prop("checked"))
+		{
+			$("#pwd").show();
+			$("#cpwd").show();
+		}
+		else
+		{
+			$("#pwd").hide();
+			$("#cpwd").hide();
+		}
+		
 	}
 </script>
 	<%
