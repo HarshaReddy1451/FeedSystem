@@ -50,10 +50,6 @@ public class FeedSystemController {
 	public ModelAndView updates(HttpServletResponse response, HttpServletRequest request) throws IOException {
 		HttpSession session = request.getSession();
 		System.out.println("Username to display:" + userData.get(0));
-		/*
-		 * String userName=request.getParameter("name"); String
-		 * userMail=request.getParameter("mail");
-		 */
 		session.setAttribute("name", userData.get(0));
 		session.setAttribute("mail", userData.get(1));
 		System.out.println(userData);
@@ -392,33 +388,14 @@ public class FeedSystemController {
 			}
 		}
 		HttpSession session = req.getSession();
-		sendMailToUser(userMail);
+		String subject = "Registration successfull.";
+		String msgBody = "Hi,"+"\n"+"You are registered to FeedSystem with "+userMail;
+		sendMail(userMail,subject,msgBody);
 		session.setAttribute("name", userName);
 		session.setAttribute("mail", userMail);
 		return new ModelAndView("update");
 	}
-
-	private void sendMailToUser(String userMail) {
-		// TODO Auto-generated method stub
-		String subject = "Registration successfull.";
-		String msgBody = "Hi,"+"\n"+"You are registered to FeedSystem with "+userMail;
-		Properties propertiesobj = new Properties();
-		Session session = Session.getDefaultInstance(propertiesobj,null);
-		try {
-			MimeMessage msg = new MimeMessage(session);
-			msg.setFrom(new InternetAddress("harsha.vardhan@a-cti.com", "Admin"));
-			msg.addRecipient(Message.RecipientType.TO, new InternetAddress(userMail));
-			msg.setSubject(subject);
-			msg.setText(msgBody);
-			Transport.send(msg);
-		} catch (IOException e) {
-			System.out.println(e);
-		} catch (MessagingException e) {
-			System.out.println(e);
-		}
-		
-	}
-
+	
 	@RequestMapping("/loginWithGoogle")
 	public ModelAndView loginWithGoogle() {
 		return new ModelAndView(
@@ -528,7 +505,7 @@ public class FeedSystemController {
 	}
 
 	@SuppressWarnings("unchecked")
-	@RequestMapping(value = "/changePassword", method = RequestMethod.POST)
+	@RequestMapping(value = "/updateUserDetails", method = RequestMethod.POST)
 	public void changePassword(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		String nameToUpdate = request.getParameter("name");
 		String mailToUpdate = request.getParameter("mail");
@@ -548,12 +525,27 @@ public class FeedSystemController {
 			userList = (List<UserDetails>) pm.newQuery(query).execute();
 			System.out.println(userList);
 			if (!userList.isEmpty()) {
-				objUserDetails = (UserDetails) userList.get(0);
-				System.out.println("username " + objUserDetails.getSignUpUserName());
-				System.out.println("email " + objUserDetails.getSignUpEmail());
-				/*objUserDetails.setSignUpUserName(nameToUpdate);*/
-				objUserDetails.setSignUpPassword(encryptedPwd);
-				sendMail(mailToUpdate);
+				if(passwordToUpdate==null || passwordToUpdate=="")
+				{
+					objUserDetails = (UserDetails) userList.get(0);
+					System.out.println("username " + objUserDetails.getSignUpUserName());
+					System.out.println("email " + objUserDetails.getSignUpEmail());
+					objUserDetails.setSignUpUserName(nameToUpdate);
+					String subject = "User Profile Updated";
+					String msgBody = "Hi,"+"\n"+"Your profile has been Updated.";
+					sendMail(mailToUpdate,subject,msgBody);
+				}
+				else
+				{
+					objUserDetails = (UserDetails) userList.get(0);
+					System.out.println("Password");
+					System.out.println("username " + objUserDetails.getSignUpUserName());
+					System.out.println("email " + objUserDetails.getSignUpEmail());
+					objUserDetails.setSignUpPassword(encryptedPwd);
+					String subject = "User Profile Updated";
+					String msgBody = "Hi,"+"\n"+"Your password has been changed.";
+					sendMail(mailToUpdate,subject,msgBody);
+				}
 			}
 		} catch (Exception e) {
 			e.getMessage();
@@ -563,10 +555,9 @@ public class FeedSystemController {
 		response.getWriter().write(new Gson().toJson(mailToUpdate));
 	}
 	
-	private void sendMail(String mailToSendMsg) {
+	private void sendMail(String mailToSendMsg,String subject,String msgBody) {
 		// TODO Auto-generated method stub
-		String subject = "User Profile Updated";
-		String msgBody = "Hi,"+"\n"+"Your Profile has been Updated.";
+		System.out.println("sending mail");
 		Properties propertiesobj = new Properties();
 		Session session = Session.getDefaultInstance(propertiesobj,null);
 		try {
@@ -581,36 +572,5 @@ public class FeedSystemController {
 		} catch (MessagingException e) {
 			System.out.println(e);
 		}
-	}
-
-	@SuppressWarnings("unchecked")
-	@RequestMapping(value = "/updateUserDetails", method = RequestMethod.POST)
-	public void updateUserDetails(HttpServletRequest request, HttpServletResponse response) throws IOException {
-		String nameToUpdate = request.getParameter("name");
-		String mailToUpdate = request.getParameter("mail");
-		System.out.println("name to update: " + nameToUpdate);
-		System.out.println("mail to update: " + mailToUpdate);
-
-		UserDetails objUserDetails = new UserDetails();
-		List<UserDetails> userList = new ArrayList<UserDetails>();
-		PersistenceManager pm = PMF.get().getPersistenceManager();
-		try {
-			String query = "select FROM " + UserDetails.class.getName() + " where signUpEmail == '" + mailToUpdate
-					+ "'";
-			userList = (List<UserDetails>) pm.newQuery(query).execute();
-			System.out.println(userList);
-			if (!userList.isEmpty()) {
-				objUserDetails = (UserDetails) userList.get(0);
-				System.out.println("username " + objUserDetails.getSignUpUserName());
-				System.out.println("email " + objUserDetails.getSignUpEmail());
-				objUserDetails.setSignUpUserName(nameToUpdate);
-				sendMail(mailToUpdate);
-			}
-		} catch (Exception e) {
-			e.getMessage();
-		} finally {
-			pm.close();
-		}
-		response.getWriter().write(new Gson().toJson(mailToUpdate));
 	}
 }

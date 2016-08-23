@@ -272,7 +272,7 @@
 					url:"/updateUserDetails",
 					type:'post',
 					dataType:"json",
-					data:{name,mail},
+					data:{name,mail,newPwd},
 					success:function(userData){
 						if(userData!=null)
 						{
@@ -286,7 +286,7 @@
 		{
 			$(".error-msg").hide();
 			$.ajax({
-				url:"/changePassword",
+				url:"/updateUserDetails",
 				type:'post',
 				dataType:"json",
 				data:{name,mail,newPwd},

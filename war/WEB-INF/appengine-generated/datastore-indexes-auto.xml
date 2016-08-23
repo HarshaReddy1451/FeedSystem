@@ -1,8 +1,8 @@
-<!-- Indices written at Mon, 22 Aug 2016 19:07:12 IST -->
+<!-- Indices written at Tue, 23 Aug 2016 11:12:58 IST -->
 
 <datastore-indexes>
 
-    <!-- Used 6 times in query history -->
+    <!-- Used 4 times in query history -->
     <datastore-index kind="UserDetails" ancestor="false" source="auto">
         <property name="signUpEmail" direction="asc"/>
         <property name="date" direction="desc"/>
