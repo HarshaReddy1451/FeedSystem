@@ -388,14 +388,14 @@ public class FeedSystemController {
 			}
 		}
 		HttpSession session = req.getSession();
-		String subject = "Registration successfull.";
-		String msgBody = "Hi,"+"\n"+"You are registered to FeedSystem with "+userMail;
-		sendMail(userMail,subject,msgBody);
+		String subject1 = "Registration successfull.";
+		String msgBody1 = "Hi," + "\n" + "You are registered to FeedSystem with " + userMail;
+		sendMail(userMail, subject1, msgBody1);
 		session.setAttribute("name", userName);
 		session.setAttribute("mail", userMail);
 		return new ModelAndView("update");
 	}
-	
+
 	@RequestMapping("/loginWithGoogle")
 	public ModelAndView loginWithGoogle() {
 		return new ModelAndView(
@@ -525,26 +525,23 @@ public class FeedSystemController {
 			userList = (List<UserDetails>) pm.newQuery(query).execute();
 			System.out.println(userList);
 			if (!userList.isEmpty()) {
-				if(passwordToUpdate==null || passwordToUpdate=="")
-				{
+				if (passwordToUpdate == null || passwordToUpdate == "") {
 					objUserDetails = (UserDetails) userList.get(0);
 					System.out.println("username " + objUserDetails.getSignUpUserName());
 					System.out.println("email " + objUserDetails.getSignUpEmail());
 					objUserDetails.setSignUpUserName(nameToUpdate);
-					String subject = "User Profile Updated";
-					String msgBody = "Hi,"+"\n"+"Your profile has been Updated.";
-					sendMail(mailToUpdate,subject,msgBody);
-				}
-				else
-				{
+					String subject2 = "User Profile Updated";
+					String msgBody2 = "Hi," + "\n" + "Your profile has been Updated in FeedSystem.";
+					sendMail(mailToUpdate, subject2, msgBody2);
+				} else {
 					objUserDetails = (UserDetails) userList.get(0);
 					System.out.println("Password");
 					System.out.println("username " + objUserDetails.getSignUpUserName());
 					System.out.println("email " + objUserDetails.getSignUpEmail());
 					objUserDetails.setSignUpPassword(encryptedPwd);
-					String subject = "User Profile Updated";
-					String msgBody = "Hi,"+"\n"+"Your password has been changed.";
-					sendMail(mailToUpdate,subject,msgBody);
+					String subject3 = "User Profile Updated";
+					String msgBody3 = "Hi," + "\n" + "Your password has been changed in FeedSystem.";
+					sendMail(mailToUpdate, subject3, msgBody3);
 				}
 			}
 		} catch (Exception e) {
@@ -554,12 +551,12 @@ public class FeedSystemController {
 		}
 		response.getWriter().write(new Gson().toJson(mailToUpdate));
 	}
-	
-	private void sendMail(String mailToSendMsg,String subject,String msgBody) {
+
+	private void sendMail(String mailToSendMsg, String subject, String msgBody) {
 		// TODO Auto-generated method stub
 		System.out.println("sending mail");
 		Properties propertiesobj = new Properties();
-		Session session = Session.getDefaultInstance(propertiesobj,null);
+		Session session = Session.getDefaultInstance(propertiesobj, null);
 		try {
 			MimeMessage msg = new MimeMessage(session);
 			msg.setFrom(new InternetAddress("harsha.vardhan@a-cti.com", "Admin"));

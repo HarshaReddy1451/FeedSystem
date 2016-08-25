@@ -31,20 +31,27 @@
 					var className=new Array();
 					for(var i=0;i<parsedResponse.length;i++)
 					{
-						className[i]=parsedResponse[i].signUpUserName.replace(" ","-");
-						console.log("Trimmed ClassNames: "+className[i]);
-						$("#displayUsers").append("<div class='users'>"+parsedResponse[i].signUpUserName+"<div class="+className[i]+">("+parsedResponse[i].signUpEmail+")</div></div><br>");
-						$("."+className[i]).hide();
-						console.log("ClassNames: "+className[i]);
-						console.log("ClassNames Length: "+className.length);
-						for(var j=0;j<className.length;j++)
+						if(parsedResponse[i].signUpUserName==="Test")
 						{
-							if(className[j]===className[j+1])
+							$("#displayUsers").append("<div class='users'>"+parsedResponse[i].signUpEmail+"</div><br>");
+						}
+						else
+						{
+							className[i]=parsedResponse[i].signUpUserName.replace(" ","-");
+							console.log("Trimmed ClassNames: "+className[i]);
+							$("#displayUsers").append("<div class='users'>"+parsedResponse[i].signUpUserName+"<div class="+className[i]+">("+parsedResponse[i].signUpEmail+")</div></div><br>");
+							$("."+className[i]).hide();
+							console.log("ClassNames: "+className[i]);
+							console.log("ClassNames Length: "+className.length);
+							for(var j=0;j<className.length;j++)
 							{
-								classNameArray[j]=className[j+1];
-								console.log("ClassNameArray: "+classNameArray[j]);
-								console.log("ClassNameArray Length: "+classNameArray.length);
-								$("."+classNameArray[j]).show();
+								if(className[j]===className[j+1])
+								{
+									classNameArray[j]=className[j+1];
+									console.log("ClassNameArray: "+classNameArray[j]);
+									console.log("ClassNameArray Length: "+classNameArray.length);
+									$("."+classNameArray[j]).show();
+								}
 							}
 						}
 					}
